@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  svg {
+    /* The rotation is to make 100 km grid squares on GB mainland, */ 
+    /* projected with geoAlbers, square to map frame. */
+    transform: rotate(1.9deg);
+  }
+  #mapDiv {
+    border: 1px solid black;
+    overflow: hidden;
+    margin: 1em;
+  }
+  .shake {
+    /* Start the shake animation and make the animation last for 0.5 seconds */
+    animation: shake 0.5s;
+  }
+
+  body {
+    font-size: 0.8em;
+    margin: 0;
+    height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  p {
+    margin: 0.6em 0;
+  }
+  h1, h2, h3 {
+    margin-bottom: 0;
+  }
+  .content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+  }
+  .split {
+    width:100%;
+    height:100%;
+  }
+  .right {
+    height:100%;
+    overflow-x:hidden;
+    overflow-y:auto;
+    padding: 0 1em;
+  }
+  .gutter {
+    cursor: e-resize;
+    height: 100%;
+    background: lightgrey;
+  }
+  @keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+  }
+</style>
+<body>
+
+<div class="content">
+  <div class="split left">
+    <div id="svgDiv" style="width: 100%"></div>
+  </div>
+  <div class="split right">
+    <h2>Demonstration of D3 for simple atlas maps</h2>
+    <p>
+      This is a demonstration of using the javascript library <b>D3.js</b> with <b>SVG</b> to illustrate atlas maps for biological recording.
+      Its an alternative to using pre-defined static maps images for broad-scale distributions.
+      It is <i>not</i> an alternative to interactive atlas maps implemented with a slippy map technology like Leaflet.
+    </p>
+    <p>
+      Select a species from the drop-down below. Instead of loading a different image file, we download a small CSV file summarising the 
+      distribution (in this demonstration at hectad level). D3 is then used to generate SVG elements on the fly.
+    </p>
+    <select id="dataFile" onchange='fileSelected()'>
+      <option value="nbn/none.csv">No taxon selected</option>
+      <option value="nbn/Sphagnum magellanicum hectads with tetrads-2020-05-29.csv">Sphagnum magellanicum</option>
+      <option value="nbn/Sphagnum cuspidatum hectads with tetrads-2020-05-29.csv">Sphagnum cuspidatum</option>
+      <option value="nbn/Polytrichum commune hectads with tetrads-2020-05-29.csv">Polytrichum commune</option>
+    </select>
+    <a id="sourcefile" href=''></a>
+    <p>
+      For each hectad I've chosen to illustrate a metric showing the number of tetrads within the hectad that have records, but obviously
+      different metrics could be illustrated equally well. The demo uses size or colour (or both), to illustrate the metric. And, of course,
+      each could be used to illustrate different metrics.
+    </p>
+
+    <input type="checkbox" id="colourCheck" name="colourCheck" value="colour" checked onchange='reDraw()'>
+    <label for="colourCheck"> Use colours to illustrate metric</label><br>
+    <input type="checkbox" id="sizeCheck" name="sizeCheck" value="size" onchange='reDraw()'>
+    <label for="sizeCheck"> Use size to illustrate metric</label>
+
+    <p>
+      You can also select a CSV file from your own computer if you want to look at a different species. For this demo you will need
+      to replicate the format excactly: two columns with headers 'Hectad' and 'Tetrads'. The Hectad column contains the references
+      for any hectad (GB or Irish) that has records (don't include references for the hectads without records) and the Tetrads
+      column contains a number between 1 and 25.
+    </p>
+
+    <label for="csvFile">Browse for a CSV file:</label>
+    <input type="file" id="csvFile" name="csvFile" accept=".csv" onChange="fileOpened(event)">
+
+    <h3>Transitions</h3>
+    <p>
+      D3 is good at animating the SVG object transitions as the data linked to the SVG objects changes. This
+      enables us to give users a more engaging experience. There are many ways we could do this. To give you
+      a feel for it, try altering some of the options below.
+    </p>
+
+    <input type="radio" id="hectad" name="origin" value="hectad" checked>
+    <label for="hectad">Origin at centre of hectad</label>
+    <input type="radio" id="hunkm" name="origin" value="hunkm">
+    <label for="hunkm">Origin at centre of 100 km square</label><br><br>
+
+    <input type="radio" id="parallel" name="phasing" value="parallel" checked>
+    <label for="parallel">Simultaneous leave & enter</label>
+    <input type="radio" id="serial" name="phasing" value="serial">
+    <label for="serial">Leave before enter</label><br><br>
+
+    <label for="duration">Transition duration (milliseconds):</label>
+    <input type="number" id="duration" name="duration" step="100" min="0" max="5000" value="1000"><br><br>
+
+    <label for="easing">Transition type:</label>
+    <select id="easing">
+      <option value="easeElastic">Elastic</option>
+      <option value="easeBounce">Bounce</option>
+      <option value="easeLinear" selected>Linear</option>
+      <option value="easeSin">Sin</option>
+      <option value="easeQuad">Quad</option>
+      <option value="easeCubic">Cubic</option>
+      <option value="easePoly">Poly</option>
+      <option value="easeCircle">Circle</option>
+      <option value="easeExp">Exp</option>
+      <option value="easeBack">Back</option>
+    </select>
+    <a target="_blank" href="https://bl.ocks.org/d3noob/1ea51d03775b9650e8dfd03474e202fe">(D3 transitions)</a>
+  
+
+    <h3>Responsiveness</h3>
+    <p>
+      Scaleable Vector Graphics (SVG), as the name suggests, can be easily scaled to suit any viewport.
+      So making maps responsive to different screen sizes, including mobile devices, is relatively easy.
+      The map on this page is placed in a resizeable partition so that you can easy see how well
+      (and quickly) it can respond to the size of the viewport.
+    </p>
+    <p>
+      &#8592; Drag this bar left and right.
+    </p>
+    <p>
+      You can see that it scales much more effectively than a static raster map image would.
+    </p>
+
+    <h3>Colours</h3>
+    <p>
+      Symbol colours: Min <span id="dotsMinColour"></span>,  Mid <span id="dotsMidColour"></span>, Max <span id="dotsMaxColour"></span>
+      <button onclick='initSymbolColours()' style="margin-left: 1em">Reset</button><br>
+      <label for="opacity">Opacity:</label>
+      <input type="number" id="opacity" name="opacity" step="5" min="0" max="100" value="75" oninput='reDrawDots()' onchange='reDrawDots()'>
+    </p>
+    <p>
+      Map colours: Sea <span id="seaColour"></span>,  Land <span id="landColour"></span>, Outline <span id="outlineColour"></span>, Grid <span id="gridColour"></span>
+      <button onclick='initMapColours()' style="margin-left: 1em">Reset</button>
+    </p>
+
+    <h3>D3 and map projections</h3>
+    <p>
+      As you can see, D3 provides excellent support for building map-based visualisations, for example by providing a projection
+      functions to translate between map coordinates and SVG coordinates. Although D3 provides support for a number of
+      <a target='_blank' href='https://github.com/d3/d3-geo-projection#projections'>global projections</a>, there is no direct support
+      for British National Grid. The map on this page is projected with the Albers equal-area conic projection
+      (as <a target='_blank' href='https://bost.ocks.org/mike/map/'>recommended here</a> by Mike Bostock - D3's creator). I have also
+      rotated the whole map by 1.9 degrees so that the grid-line in GB are square to the map frame.
+    </p>
+
+    <h3>Symbol shapes</h3>
+    <p>
+      This demonstration uses only SVG circles. They are the easiest to implment because they are natively supported by
+      SVG and no rotation of the symbol is required in Ireland. Squares (rectangles) are also natively supported by
+      SVG but would require rotation in Ireland in order to be correctly oriented to the grid. Other symbols, e.g. triangles,
+      can be implemented using other SVG primitives and would also require rotation in Ireland.
+    </p>
+    <p>
+      Although more complex, using symbols other than circles is perfectly doable. So
+      if different shapes are required to represent different information 
+      facets (like the BTO map store's distribution change maps for example), then we should be able to support it 
+      in maps like these.
+    </p>
+
+    <h3>Channel islands</h3>
+    <p>
+      You will have noticed that the Channel Islands are not included. It should be possible to show on an inset
+      (e.g. bottom left) of a map like that shown here by applying a separate transformation on those data.
+    </p>
+
+    <h3>Raster backdrops</h3>
+    <p>
+      In theory it should be possible to display different raster images as backdrops, e.g. geology or soils, and
+      although displaying an image with SVG is straight forward, with D3 it is complicated by the need to match
+      the projection of the generated image to the projection used in D3. So this would require a good deal of 
+      investigation and experimentation.
+    </p>
+    <h3>Browser support</h3>
+    <p>
+      The main requirement is that a Browser supports SVG which <a target='_blank' href='https://caniuse.com/#feat=svg'>most modern browsers do</a>.
+      I've tested it on Chrome, Firefox and MS Edge. Obviously it is very much reliant on Javascript being enabled too.
+    </p>
+
+    <h3>Fun stuff</h3>
+    <p>
+      <button onClick="shakeTheMap()">Give the map a shake!</button>
+    </p>
+
+    <h3>Useful links</h3>
+    <ul>
+      <li><a href='https://bost.ocks.org/mike/map/' target='_blank'>Original D3 mapping demonstration from D3 creator Mike Bostock</a></li>
+      <li><a href='https://medium.com/@mbostock/command-line-cartography-part-1-897aa8f8ca2c' target='_blank'>More recent D3 mapping with Mike Bostock</a></li>
+    </ul>
+
+  </div>
+</div>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="//d3js.org/topojson.v1.min.js"></script>
+<script src="https://unpkg.com/split.js/dist/split.min.js"></script>
+<script src="libs/jscolor.js"></script>
+
+<script>
+  const height = 800
+  const width = height * 0.7
+
+  const minColour = new JSColor('dotsMinColour', {onFineChange: reDrawDots})
+  const midColour = new JSColor('dotsMidColour', {onFineChange: reDrawDots})
+  const maxColour = new JSColor('dotsMaxColour', {onFineChange: reDrawDots})
+  const seaColour = new JSColor('seaColour', {onFineChange: setMapColours})
+  const landColour = new JSColor('landColour', {onFineChange: setMapColours})
+  const outlineColour = new JSColor('outlineColour', {onFineChange: setMapColours})
+  const gridColour = new JSColor('gridColour', {onFineChange: setMapColours})
+
+  Split(['.left', '.right'], {
+    gutterSize: 5,
+    sizes: [30,70]
+  })
+
+  initSymbolColours()
+  initMapColours()
+
+  // D3 supports a limited number of projections. Albers equal-area conic projection
+  // recommended by Mike Bostock is a good choice for UK: https://bost.ocks.org/mike/map/ 
+  const projection = d3.geoAlbers()
+    .center([0, 55.4])
+    .rotate([4.4, 0])
+    .parallels([50, 60])
+    .scale(height * 5)
+    .translate([width / 2, height / 2])
+
+  const path = d3.geoPath()
+    .projection(projection)
+
+  // Use hectad (in middle of area of interest) to work out pixel radius for hectad circle
+  const circumference = 6371000 * Math.PI * 2 // circumference of earth in metres
+  const angle = 5000 / circumference * 360 // angular radius of hectad
+  const circleFunc = d3.geoCircle() // generator of hectad circle of SC38
+    .center([-4.533086, 54.234041])
+    .radius(angle)
+  const mbr = path.bounds(circleFunc())
+  const radiusPixels = Math.abs(mbr[1][0]-mbr[0][0])/2
+
+  const div = d3.select("#svgDiv").append("div")
+    .attr("id", "mapDiv")
+
+  const svg = div.append("svg")
+    .attr("viewBox", "0 0 " + width + " " +  height)
+
+  const boundary = svg.append("g")
+  const grid = svg.append("g")
+  const hectads = svg.append("g")
+
+  /* GeoJson for Britian & Ireland outline and grid lines is pre-generated */
+  /* using QGIS and exported in WGS84 */
+  const pUK = d3.json("BritainAndIrelandS2.geojson").then(function(data) {
+    uk = boundary.append("path")
+    .datum(data)
+    .attr("d", path)
+    .attr("id", "uk")
+  })
+  const pGrid = d3.json("BritainAndIrelandGrid.geojson").then(function(data) {
+    grid.append("path")
+    .datum(data)
+    .attr("d", path)
+    .attr("id", "gridlines")
+  })
+  let allHectads = {}
+  const pHectads = d3.csv("hectads.csv").then(function(data) {
+    data.forEach(function(h) {
+      allHectads[h.GridRef] = {Lat: h.Lat, Lon: h.Lon}
+    })
+  })
+  let km100 = {}
+  const pKm100 = d3.csv("km100.csv").then(function(data) {
+    data.forEach(function(s) {
+      km100[s.GridRef] = {Lat: s.Lat, Lon: s.Lon}
+    })
+  })
+  Promise.all([pUK, pGrid, pHectads, pKm100]).then(function(){
+      setMapColours()
+  })
+
+  let browsedFileData
+
+  function fileSelected() {
+    document.getElementById('csvFile').value = null
+    browsedFileData = null
+    reDraw()
+  }
+  function fileOpened(event) {
+    document.getElementById('dataFile').value = "nbn/none.csv"
+    const reader = new FileReader()
+    reader.addEventListener('load', (event) => {
+      browsedFileData = event.target.result
+      reDraw()
+    })
+    reader.readAsDataURL(event.target.files[0])
+  }
+
+  function shakeTheMap() {
+    d3.select('#mapDiv').classed("shake", true)
+    setTimeout(function() {
+      d3.select('#mapDiv').classed("shake", false)
+    }, 500)
+    reDraw(true)
+  }
+
+  function initSymbolColours() {
+    minColour.fromString('A09FFD')
+    midColour.fromString('0104E9')
+    maxColour.fromString('EC0707')
+    reDrawDots()
+  }
+
+  function initMapColours () {
+    gridColour.fromRGB(150, 150, 255)
+    landColour.fromRGB(255, 255, 255)
+    outlineColour.fromRGB(150, 150, 255)
+    seaColour.fromString('#E6EFFF')
+    setMapColours()
+  }
+
+  function setMapColours() {
+    d3.select("#gridlines").style('stroke',  gridColour.toHEXString())
+    d3.select("#uk").style('fill',  landColour.toHEXString())
+    d3.select("#uk").style('stroke',  outlineColour.toHEXString())
+    d3.select("#mapDiv").style('background-color',  seaColour.toHEXString())
+  }
+
+  function getCentre(d, entering) {
+    if (!entering || document.getElementById('hectad').checked) {
+      if (allHectads[d.Hectad]) {
+        return projection([allHectads[d.Hectad].Lon, allHectads[d.Hectad].Lat])
+      } else {
+        // In case hectad missing from reference file
+        return projection([0,0])
+      }
+    } else {
+      let prefix
+      if (d.Hectad.length === 4) {
+          prefix = d.Hectad.substring(0, 2)
+      } else {
+          prefix = d.Hectad.substring(0, 1)
+      }
+      return projection([km100[prefix].Lon, km100[prefix].Lat])
+    }     
+  }
+
+  function colours() {
+    return colors = d3.scaleLinear()
+      .domain([1,12,25])
+      .range([
+        minColour.toHEXString(),
+        midColour.toHEXString(),
+        maxColour.toHEXString()
+      ])
+  }
+
+  function reDrawDots() {
+    const colors = colours()
+    d3.selectAll("circle")
+      .style("fill", function(d){
+        if (document.getElementById('colourCheck').checked) {
+          return colors(d.Tetrads)
+        } else {
+          return colors(25)
+        }
+      })
+      .style("opacity", function() {
+        return document.getElementById('opacity').value / 100
+      })
+  }
+
+  function reDraw(shaken) {
+    const colors = colours()
+
+    if (browsedFileData) {
+      file = browsedFileData
+    } else {
+      file = document.getElementById('dataFile').value
+    }
+
+    const sourceLink = document.getElementById('sourcefile')
+    if (browsedFileData) {
+      sourceLink.setAttribute('href', '')
+      sourceLink.innerText = ""
+    } else if (file==="nbn/none.csv") {
+      sourceLink.setAttribute('href', '')
+      sourceLink.innerText = ""
+    } else {
+      sourceLink.setAttribute('href', file)
+      sourceLink.innerText = "Download source file"
+    }
+    
+    const totalDuration = document.getElementById('duration').value
+    let enterDuration, updateDuration, exitDuration 
+    if (shaken) {
+      enterDuration = 500
+      updateDuration = totalDuration
+    } else if (document.getElementById('parallel').checked) {
+      enterDuration = 0
+      updateDuration = exitDuration = totalDuration
+    } else {
+      enterDuration = updateDuration = exitDuration = totalDuration
+    }
+ 
+    
+    d3.csv(file).then(function(data) {
+
+      const u = svg.selectAll("circle")
+        .data(data, function(d) {
+            //console.log(d.Hectad)
+            return d.Hectad
+        })
+      u.enter()
+        .append("circle")
+        .attr("cx", function(d) {
+          return getCentre(d, true)[0]    
+        })
+        .attr("cy", function(d) {
+          return getCentre(d, true)[1]
+        }) 
+        .attr("r", 0)
+      .merge(u)
+        .transition()  
+          .ease(d3[document.getElementById('easing').value])   
+          .duration(enterDuration)
+          .attr("r", function(d) {
+            if (shaken || document.getElementById('parallel').checked) {
+              return d3.select(this).attr("r")
+            } else {
+              return 0
+            }
+          })
+          .attr("cx", function(d) {
+            if (shaken) {
+              return Number(d3.select(this).attr("cx")) + (Math.random() * 2 - 1) * radiusPixels * 30
+            } else if (document.getElementById('parallel').checked) {
+              return d3.select(this).attr("cx")
+            } else {
+              return getCentre(d, true)[0]
+            }
+          })
+          .attr("cy", function(d) {
+            if (shaken) {
+              return Number(d3.select(this).attr("cy")) + (Math.random() * 2 - 1) * radiusPixels * 30
+            } else if (document.getElementById('parallel').checked) {
+              return d3.select(this).attr("cy")
+            } else {
+              return getCentre(d, true)[1]
+            }
+          })    
+        .transition()
+          .ease(d3[document.getElementById('easing').value])
+          .duration(updateDuration)
+          .attr("cx", function(d) {
+            return getCentre(d, false)[0]
+          })
+          .attr("cy", function(d) {
+            return getCentre(d, false)[1]
+          })
+          .attr("r", function(d) {
+            if (document.getElementById('sizeCheck').checked) {
+              return Math.log(d.Tetrads) / Math.log(25) * radiusPixels
+            } else {
+              return radiusPixels
+            }
+          })
+          .style("fill", function(d){
+            if (document.getElementById('colourCheck').checked) {
+              return colors(d.Tetrads)
+            } else {
+              return colors(25)
+            }
+          })
+          .style("opacity", function() {
+            return document.getElementById('opacity').value / 100
+          })
+      u.exit()
+        .transition()
+          .ease(d3[document.getElementById('easing').value])
+          .duration(exitDuration)
+          .attr("cx", function(d) {
+            return getCentre(d, true)[0]
+          })
+          .attr("cy", function(d) {
+            return getCentre(d, true)[1]
+          })
+          .attr("r", 0)
+          .remove()
+    })
+  }
+</script>
+</body>
