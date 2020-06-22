@@ -159,13 +159,15 @@
 
     <h3>Colours</h3>
     <p>
-      Symbol colours: Min <span id="dotsMinColour"></span>,  Mid <span id="dotsMidColour"></span>, Max <span id="dotsMaxColour"></span>
+      Symbol colours: Min <input type="text" style="width: 60px"  id="dotsMinColour"></input>,  Mid <input type="text" style="width: 60px"  id="dotsMidColour"></input>, Max <input type="text" style="width: 60px"  id="dotsMaxColour"></input>
       <button onclick='initSymbolColours()' style="margin-left: 1em">Reset</button><br>
-      <label for="opacity">Opacity:</label>
+    </p>
+    <p>
+      <label for="opacity">Symbol opacity:</label>
       <input type="number" id="opacity" name="opacity" step="5" min="0" max="100" value="75" oninput='reDrawDots()' onchange='reDrawDots()'>
     </p>
     <p>
-      Map colours: Sea <span id="seaColour"></span>,  Land <span id="landColour"></span>, Outline <span id="outlineColour"></span>, Grid <span id="gridColour"></span>
+      Map colours: Sea <input type="text" style="width: 60px" id="seaColour"></input>,  Land <input type="text" style="width: 60px" id="landColour"></input>, Outline <input type="text" style="width: 60px" id="outlineColour"></input>, Grid <input type="text" style="width: 60px" id="gridColour"></input>
       <button onclick='initMapColours()' style="margin-left: 1em">Reset</button>
     </p>
 
