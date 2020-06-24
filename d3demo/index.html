@@ -173,12 +173,11 @@
 
     <h3>D3 and map projections</h3>
     <p>
-      As you can see, D3 provides excellent support for building map-based visualisations, for example by providing a projection
+      D3 provides excellent support for building map-based visualisations, for example by providing a projection
       functions to translate between map coordinates and SVG coordinates. Although D3 provides support for a number of
       <a target='_blank' href='https://github.com/d3/d3-geo-projection#projections'>global projections</a>, there is no direct support
-      for British National Grid. The map on this page is projected with the Albers equal-area conic projection
-      (as <a target='_blank' href='https://bost.ocks.org/mike/map/'>recommended here</a> by Mike Bostock - D3's creator). I have also
-      rotated the whole map by 1.9 degrees so that the grid-line in GB are square to the map frame.
+      for British National Grid. However if input data, such as the country boundary in this demo, are already projected in BNG
+      then D3 can use a simple transformation can be used to display, so that's what we use here.
     </p>
 
     <h3>Symbol shapes</h3>
@@ -203,10 +202,9 @@
 
     <h3>Raster backdrops</h3>
     <p>
-      In theory it should be possible to display different raster images as backdrops, e.g. geology or soils, and
-      although displaying an image with SVG is straight forward, with D3 it is complicated by the need to match
-      the projection of the generated image to the projection used in D3. So this would require a good deal of 
-      investigation and experimentation.
+      It should be possible to display different raster images as backdrops, e.g. geology or soils, since  displaying 
+      an image with SVG is straight forward. The only complicating factor is to scale and position them
+      correctly.
     </p>
     <h3>Browser support</h3>
     <p>
