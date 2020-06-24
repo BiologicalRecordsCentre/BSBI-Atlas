@@ -97,6 +97,11 @@
     <input type="checkbox" id="sizeCheck" name="sizeCheck" value="size" onchange='reDraw()'>
     <label for="sizeCheck"> Use size to illustrate metric</label>
 
+    <input type="radio" id="logTrans" name="sizeTransformation" value="logTrans" checked onchange='reDraw()'>
+    <label for="logTrans">Log</label>
+    <input type="radio" id="sqrtTrans" name="sizeTransformation" value="sqrtTrans" onchange='reDraw()'>
+    <label for="sqrtTrans">Square root</label>
+
     <p>
       You can also select a CSV file from your own computer if you want to look at a different species. For this demo you will need
       to replicate the format excactly: two columns with headers 'Hectad' and 'Tetrads'. The Hectad column contains the references
@@ -443,7 +448,6 @@
 
       const u = svg.selectAll("circle")
         .data(data, function(d) {
-            //console.log(d.Hectad)
             return d.Hectad
         })
       u.enter()
@@ -495,7 +499,11 @@
           })
           .attr("r", function(d) {
             if (document.getElementById('sizeCheck').checked) {
-              return Math.log(d.Tetrads) / Math.log(25) * radiusPixels
+              if (document.getElementById('logTrans').checked) {
+                return Math.log(d.Tetrads) / Math.log(25) * radiusPixels
+              } else {
+                return Math.sqrt(d.Tetrads) / Math.sqrt(25) * radiusPixels
+              }
             } else {
               return radiusPixels
             }
