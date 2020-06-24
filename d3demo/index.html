@@ -233,7 +233,7 @@
 
 <script>
     const height = 800
-    const width = height * 0.7
+    const width = height * 0.72
 
     const minColour = new JSColor('dotsMinColour', {onFineChange: reDrawDots})
     const midColour = new JSColor('dotsMidColour', {onFineChange: reDrawDots})
@@ -254,11 +254,12 @@
     function transformFunction(llx, lly, urx, ury, width, height) {
       const realWidth = urx - llx
       const realHeight = ury - lly
+      const adjHeight = realHeight/realWidth * width
       return function(p) {
         const x = p[0]
         const y = p[1]
         const tX = width * (x-llx)/realWidth
-        const tY = height - height * (y-lly)/realHeight
+        const tY = adjHeight - adjHeight * (y-lly)/realHeight
         return [tX, tY]
       }
     }
