@@ -281,7 +281,8 @@
     const path = d3.geoPath()
       .projection(d3Transformation(transform))
       
-    const radiusPixels = Math.abs(transform(300000,300000)[0]-transform(310000,310000)[0])
+    const radiusPixels = Math.abs(transform([300000,300000])[0]-transform([305000,305000])[0])
+    console.log(radiusPixels)
 
     const div = d3.select("#svgDiv").append("div")
       .attr("id", "mapDiv")
@@ -312,13 +313,13 @@
     let allHectads = {}
     const pHectads = d3.csv("hectads-27700.csv").then(function(data) {
       data.forEach(function(h) {
-        allHectads[h.GridRef] = {Lat: h.x, Lon: h.y}
+        allHectads[h.GridRef] = {Easting: h.x, Northing: h.y}
       })
     })
     let km100 = {}
     const pKm100 = d3.csv("km100-27700.csv").then(function(data) {
       data.forEach(function(s) {
-        km100[s.GridRef] = {Lat: s.x, Lon: s.y}
+        km100[s.GridRef] = {Easting: s.x, Northing: s.y}
       })
     })
     Promise.all([pUK, pGrid, pHectads, pKm100]).then(function(){
@@ -375,7 +376,7 @@
     function getCentre(d, entering) {
       if (!entering || document.getElementById('hectad').checked) {
         if (allHectads[d.Hectad]) {
-          return transform([allHectads[d.Hectad].Lon, allHectads[d.Hectad].Lat])
+          return transform([allHectads[d.Hectad].Easting, allHectads[d.Hectad].Northing])
         } else {
           // In case hectad missing from reference file
           return transform([0,0])
@@ -387,7 +388,7 @@
         } else {
             prefix = d.Hectad.substring(0, 1)
         }
-        return transform([km100[prefix].Lon, km100[prefix].Lat])
+        return transform([km100[prefix].Easting, km100[prefix].Northing])
       }     
     }
 
