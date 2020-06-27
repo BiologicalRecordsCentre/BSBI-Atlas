@@ -230,6 +230,7 @@
 <script src="//d3js.org/topojson.v1.min.js"></script>
 <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
 <script src="libs/jscolor.js"></script>
+<script src="https://unpkg.com/brc-atlas-bigr@1.0.2/dist/bigr.js"></script>
 
 <script>
     const height = 800
@@ -469,12 +470,16 @@
 
     function getCentre(d, entering) {
       if (!entering || document.getElementById('hectad').checked) {
-        if (allHectads[d.Hectad]) {
-          return transform([allHectads[d.Hectad].Easting, allHectads[d.Hectad].Northing])
-        } else {
-          // In case hectad missing from reference file
-          return transform([0,0])
-        }
+
+        const c = bigr.getCentroid(d.Hectad, 'gb')
+        return transform([c.centroid[0], c.centroid[1]])
+
+        // if (allHectads[d.Hectad]) {
+        //   return transform([allHectads[d.Hectad].Easting, allHectads[d.Hectad].Northing])
+        // } else {
+        //   // In case hectad missing from reference file
+        //   return transform([0,0])
+        // }
       } else {
         let prefix
         if (d.Hectad.length === 4) {

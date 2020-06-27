@@ -18,10 +18,10 @@ export function getCentroid (gr, toProjection) {
     y = km100.y + 5000
   } else if (gr.length - prefix.length === 2) {
     // The GR is a hectad
-    const kEasting = Number(gr.substr(2,1))
-    const kNorthing = Number(gr.substr(3,1))
-    x = km100.x + kEasting * 1000 + 500
-    y = km100.y + kNorthing * 1000 + 500
+    const kEasting = Number(gr.substr(prefix.length,1))
+    const kNorthing = Number(gr.substr(prefix.length+1,1))
+    x = km100.x + kEasting * 10000 + 5000
+    y = km100.y + kNorthing * 10000 + 5000
   } else {
     throw("This GR type not dealt with yet")
   }
