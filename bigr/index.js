@@ -14,8 +14,8 @@ export function getCentroid (gr, toProjection) {
   let x, y, outCoords
   if (prefix === gr.toUpperCase()) {
     // The GR is a 100 km square reference
-    x = km100.x + 5000
-    y = km100.y + 5000
+    x = km100.x + 50000
+    y = km100.y + 50000
   } else if (gr.length - prefix.length === 2) {
     // The GR is a hectad
     const kEasting = Number(gr.substr(prefix.length,1))

@@ -230,7 +230,11 @@
 <script src="//d3js.org/topojson.v1.min.js"></script>
 <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
 <script src="libs/jscolor.js"></script>
-<script src="https://unpkg.com/brc-atlas-bigr@1.0.2/dist/bigr.js"></script>
+<script src="https://unpkg.com/brc-atlas-bigr@1.0.3/dist/bigr.js"></script>
+
+<!-- <script type="module">
+  import { getCentroid } from 'https://unpkg.com/brc-atlas-bigr@1.0.3/dist/bigr.js'
+</script> -->
 
 <script>
     const height = 800
@@ -382,20 +386,7 @@
 
     drawInsetRectangles(transOpts)
 
-    let allHectads = {}
-    const pHectads = d3.csv("hectads-27700.csv").then(function(data) {
-      data.forEach(function(h) {
-        allHectads[h.GridRef] = {Easting: h.x, Northing: h.y}
-      })
-    })
-    let km100 = {}
-    const pKm100 = d3.csv("km100-27700.csv").then(function(data) {
-      data.forEach(function(s) {
-        km100[s.GridRef] = {Easting: s.x, Northing: s.y}
-      })
-    })
-
-    Promise.all([pUK, pGrid, pHectads, pKm100]).then(function(){
+    Promise.all([pUK, pGrid]).then(function(){
         setMapColours()
     })
 
@@ -470,16 +461,7 @@
 
     function getCentre(d, entering) {
       if (!entering || document.getElementById('hectad').checked) {
-
-        const c = bigr.getCentroid(d.Hectad, 'gb')
-        return transform([c.centroid[0], c.centroid[1]])
-
-        // if (allHectads[d.Hectad]) {
-        //   return transform([allHectads[d.Hectad].Easting, allHectads[d.Hectad].Northing])
-        // } else {
-        //   // In case hectad missing from reference file
-        //   return transform([0,0])
-        // }
+        return transform(bigr.getCentroid(d.Hectad, 'gb').centroid)
       } else {
         let prefix
         if (d.Hectad.length === 4) {
@@ -487,7 +469,7 @@
         } else {
             prefix = d.Hectad.substring(0, 1)
         }
-        return transform([km100[prefix].Easting, km100[prefix].Northing])
+        return transform(bigr.getCentroid(prefix, 'gb').centroid)
       }     
     }
 
