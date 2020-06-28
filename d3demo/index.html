@@ -196,8 +196,11 @@
 
     <h3>Channel islands</h3>
     <p>
-      You will have noticed that the Channel Islands are not included. It should be possible to show on an inset
-      (e.g. bottom left) of a map like that shown here by applying a separate transformation on those data.
+      The outline of the British Ilse used for this map includes the Channel Islands (in their correct position), but 
+      the transformation being used to translate to SVG coordinates has been implemented to move the channel islands
+      to an 'inset' at the bottom left of the map. Channel Island hectad Grid references provided with the prefixes
+      WA and WV (https://www.bwars.com/content/channel-islands-how-give-location-reference) will be correctly displayed
+      on this inset.
     </p>
 
     <h3>Raster backdrops</h3>
@@ -222,19 +225,13 @@
       <li><a href='https://bost.ocks.org/mike/map/' target='_blank'>Original D3 mapping demonstration from D3 creator Mike Bostock</a></li>
       <li><a href='https://medium.com/@mbostock/command-line-cartography-part-1-897aa8f8ca2c' target='_blank'>More recent D3 mapping with Mike Bostock</a></li>
     </ul>
-
   </div>
 </div>
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
-<script src="//d3js.org/topojson.v1.min.js"></script>
 <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
 <script src="libs/jscolor.js"></script>
-<script src="https://unpkg.com/brc-atlas-bigr@1.0.3/dist/bigr.js"></script>
-
-<!-- <script type="module">
-  import { getCentroid } from 'https://unpkg.com/brc-atlas-bigr@1.0.3/dist/bigr.js'
-</script> -->
+<script src="https://unpkg.com/brc-atlas-bigr@1.1.0/dist/bigr.min.umd.js"></script>
 
 <script>
     const height = 800
@@ -368,16 +365,16 @@
     const insets = svg.append("g")
     const hectads = svg.append("g")
 
-    /* GeoJson for Britian & Ireland outline and grid lines is pre-generated */
-    /* using QGIS and exported in WGS84 */
-    const pUK = d3.json("GB-I-CI-27700.geojson").then(function(data) {
+    /* GeoJson for Britian, Ireland & Channel Islands outline and grid lines is pre-generated */
+    /* using QGIS and exported in EPSG:27700 */
+    const pUK = d3.json("https://unpkg.com/brc-atlas-bigr/dist/assets/GB-I-CI-27700-reduced.geojson").then(function(data) {
       uk = boundary.append("path")
       .datum(data)
       .attr("d", path)
       .attr("id", "uk")
     })
 
-    const pGrid = d3.json("GB-I-grid-27700.geojson").then(function(data) {
+    const pGrid = d3.json("https://unpkg.com/brc-atlas-bigr/dist/assets/GB-I-grid-27700-reduced.geojson").then(function(data) {
       grid.append("path")
       .datum(data)
       .attr("d", path)
