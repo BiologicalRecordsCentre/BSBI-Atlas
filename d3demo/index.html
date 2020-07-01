@@ -231,10 +231,10 @@
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
 <script src="libs/jscolor.js"></script>
-<script src="https://unpkg.com/brc-atlas-bigr@1.3.0/dist/bigr.min.umd.js"></script>
+<script src="https://unpkg.com/brc-atlas-bigr@1.4.0/dist/bigr.min.umd.js"></script>
 
 <script>
-    const transOpts = bigr.namedTransOpts.BritishIslesWithCIinset1
+    const transOpts = bigr.namedTransOpts.BI2
     const height = 800
     const width = bigr.widthFromHeight(transOpts, height)
     const transform = bigr.transformFunction(transOpts, height)
@@ -255,17 +255,6 @@
     initSymbolColours()
     initMapColours()
 
-    function d3Transformation(transform) {
-      return d3.geoTransform({
-        point: function(x, y) {
-            tP = transform([x,y])
-            tX = tP[0]
-            tY = tP[1]
-            this.stream.point(tX, tY)
-          }
-      })
-    }
-    
     const d3Transform = d3.geoTransform({
       point: function(x, y) {
         tP = transform([x,y])
@@ -317,16 +306,26 @@
     function drawInsetRectangles (opts) {
       if (opts.insets) {
         opts.insets.forEach(function(inset) {
-
           const ll = transform([inset.bounds.xmin, inset.bounds.ymin])
           const ur = transform([inset.bounds.xmax, inset.bounds.ymax])
-          const iWidth = ll[1]-ur[1]
-          const iHeight = ur[0]-ll[0]
-
+          const iWidth = ur[0]-ll[0]
+          const iHeight = ll[1]-ur[1]
           insets.append('rect')
             .classed('inset', true)
-            .attr('x', inset.imageX)
-            .attr('y', height - inset.imageY - iHeight)
+            .attr('x', function() {
+              if (inset.imageX < 0) {
+                return width - iWidth + inset.imageX
+              } else {
+                return inset.imageX
+              }
+            })
+            .attr('y', function() {
+              if (inset.imageY < 0) {
+                return -inset.imageY
+              } else {
+                return height - inset.imageY - iHeight
+              }
+            })
             .attr('width', iWidth)
             .attr('height', iHeight)
             .attr('fill', 'transparent')
@@ -378,7 +377,7 @@
       d3.select("#uk").style('fill',  landColour.toHEXString())
       d3.select("#uk").style('stroke',  outlineColour.toHEXString())
       d3.select("#mapDiv").style('background-color',  seaColour.toHEXString())
-      d3.select(".inset").style('stroke',  gridColour.toHEXString())
+      d3.selectAll(".inset").style('stroke',  gridColour.toHEXString())
     }
 
     function getCentre(d, entering) {
