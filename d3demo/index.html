@@ -87,14 +87,14 @@
       each could be used to illustrate different metrics.
     </p>
 
-    <input type="checkbox" id="colourCheck" name="colourCheck" value="colour" checked onchange='reDraw()'>
+    <input type="checkbox" id="colourCheck" name="colourCheck" value="colour" checked onchange='reDrawMap()'>
     <label for="colourCheck"> Use colours to illustrate metric</label><br>
-    <input type="checkbox" id="sizeCheck" name="sizeCheck" value="size" onchange='reDraw()'>
+    <input type="checkbox" id="sizeCheck" name="sizeCheck" value="size" onchange='reDrawMap()'>
     <label for="sizeCheck"> Use size to illustrate metric</label>
 
-    <input type="radio" id="logTrans" name="sizeTransformation" value="logTrans" checked onchange='reDraw()'>
+    <input type="radio" id="logTrans" name="sizeTransformation" value="logTrans" checked onchange='reDrawMap()'>
     <label for="logTrans">Log</label>
-    <input type="radio" id="sqrtTrans" name="sizeTransformation" value="sqrtTrans" onchange='reDraw()'>
+    <input type="radio" id="sqrtTrans" name="sizeTransformation" value="sqrtTrans" onchange='reDrawMap()'>
     <label for="sqrtTrans">Square root</label>
 
     <p>
@@ -164,7 +164,7 @@
     </p>
     <p>
       <label for="opacity">Symbol opacity:</label>
-      <input type="number" id="opacity" name="opacity" step="5" min="0" max="100" value="75" oninput='reDrawDots()' onchange='reDrawDots()'>
+      <input type="number" id="opacity" name="opacity" step="5" min="0" max="100" value="75" oninput='reDrawHectads()' onchange='reDrawHectads()'>
     </p>
     <p>
       Map colours: Sea <input type="text" style="width: 60px" id="seaColour"></input>,  Land <input type="text" style="width: 60px" id="landColour"></input>, Outline <input type="text" style="width: 60px" id="outlineColour"></input>, Grid <input type="text" style="width: 60px" id="gridColour"></input>
@@ -194,14 +194,29 @@
       in maps like these.
     </p>
 
-    <h3>Channel islands</h3>
+    <h3>Grid reference systems and Island insets</h3>
     <p>
-      The outline of the British Ilse used for this map includes the Channel Islands (in their correct position), but 
-      the transformation being used to translate to SVG coordinates has been implemented to move the channel islands
-      to an 'inset' at the bottom left of the map. Channel Island hectad Grid references provided with the prefixes
-      WA and WV (https://www.bwars.com/content/channel-islands-how-give-location-reference) will be correctly displayed
-      on this inset.
+      Grid references are handled from any of these three formats: British National Grid, Irish Grid and UTM zone 30N for 
+      the Channel Islands where provided with the prefixes
+      WA and WV (https://www.bwars.com/content/channel-islands-how-give-location-reference). 
     </p>
+    <p>
+      In this demonstration 
+      the map outline is taken from Natural Earth's 1:10m cultural vectors 
+      (https://www.naturalearthdata.com/downloads/10m-cultural-vectors/), but any source data can be used.
+      The British Isles Grid Reference Javascript library (bigr library) being developed as part of this project 
+      (https://www.npmjs.com/package/brc-atlas-bigr) provides utilities to allow defined areas of a map to
+      be translated to different locations on the displayed SVG (insets). This demonstration shows how this can be used to create 
+      insets for Channel Islands and the Northern Isles. (Note that the source boundary data is not changed 
+      - the translation is performed by D3's geoPath in conjunction with the transformations provided by our bigr library.)
+    </p>
+
+    <input type="radio" id="BI1" name="layout" value="BI1" checked onchange='reDrawBoundaries()'>
+    <label for="BI1">No insets</label>
+    <input type="radio" id="BI2" name="layout" value="BI2" onchange='reDrawBoundaries()'>
+    <label for="BI2">Channel Islands inset</label>
+    <input type="radio" id="BI3" name="layout" value="BI3" onchange='reDrawBoundaries()'>
+    <label for="BI3">Channel Islands and Northern Isles inset</label><br>
 
     <h3>Raster backdrops</h3>
     <p>
@@ -231,22 +246,19 @@
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
 <script src="libs/jscolor.js"></script>
-<script src="https://unpkg.com/brc-atlas-bigr@1.4.0/dist/bigr.min.umd.js"></script>
+<script src="https://unpkg.com/brc-atlas-bigr@1.5.1/dist/bigr.min.umd.js"></script>
 
 <script>
-    const transOpts = bigr.namedTransOpts.BI2
-    const height = 800
-    const width = bigr.widthFromHeight(transOpts, height)
-    const transform = bigr.transformFunction(transOpts, height)
-
-    const minColour = new JSColor('dotsMinColour', {onFineChange: reDrawDots})
-    const midColour = new JSColor('dotsMidColour', {onFineChange: reDrawDots})
-    const maxColour = new JSColor('dotsMaxColour', {onFineChange: reDrawDots})
+    const minColour = new JSColor('dotsMinColour', {onFineChange: reDrawHectads})
+    const midColour = new JSColor('dotsMidColour', {onFineChange: reDrawHectads})
+    const maxColour = new JSColor('dotsMaxColour', {onFineChange: reDrawHectads})
     const seaColour = new JSColor('seaColour', {onFineChange: setMapColours})
     const landColour = new JSColor('landColour', {onFineChange: setMapColours})
     const outlineColour = new JSColor('outlineColour', {onFineChange: setMapColours})
     const gridColour = new JSColor('gridColour', {onFineChange: setMapColours})
-
+    const height = 800
+    let width, transOpts, transform, path, radiusPixels,  browsedFileData
+    
     Split(['.left', '.right'], {
       gutterSize: 5,
       sizes: [30,70]
@@ -255,18 +267,38 @@
     initSymbolColours()
     initMapColours()
 
-    const d3Transform = d3.geoTransform({
-      point: function(x, y) {
-        tP = transform([x,y])
-        tX = tP[0]
-        tY = tP[1]
-        this.stream.point(tX, tY)
+    function setTransOpts() {
+      if (document.getElementById('BI1').checked) {
+        transOpts = bigr.namedTransOpts.BI1
+      } else if (document.getElementById('BI2').checked) {
+        transOpts = bigr.namedTransOpts.BI2
+      } else {
+        transOpts = bigr.namedTransOpts.BI3
       }
-    })
-    const path = d3.geoPath()
-      .projection(d3Transform)
-      
-    const radiusPixels = Math.abs(transform([300000,300000])[0]-transform([305000,305000])[0])
+    }
+    setTransOpts()
+    width = bigr.widthFromHeight(transOpts, height)
+    
+    function setTransform () {
+
+      setTransOpts()
+
+      width = bigr.widthFromHeight(transOpts, height)
+      prevTransform = transform
+      transform = bigr.transformFunction(transOpts, height)
+      radiusPixels = Math.abs(transform([300000,300000])[0]-transform([305000,305000])[0])
+      path = d3.geoPath()
+        .projection(
+          d3.geoTransform({
+            point: function(x, y) {
+              tP = transform([x,y])
+              tX = tP[0]
+              tY = tP[1]
+              this.stream.point(tX, tY)
+            }
+          })
+        )
+    }
 
     const div = d3.select("#svgDiv").append("div")
       .attr("id", "mapDiv")
@@ -281,70 +313,74 @@
 
     /* GeoJson for Britian, Ireland & Channel Islands outline and grid lines is pre-generated */
     /* using QGIS and exported in EPSG:27700 */
+    let dataBoundary
     const pUK = d3.json("https://unpkg.com/brc-atlas-bigr/dist/assets/GB-I-CI-27700-reduced.geojson").then(function(data) {
-      uk = boundary.append("path")
-      .datum(data)
-      .attr("d", path)
-      .attr("id", "uk")
+      dataBoundary = data
     })
 
+    let dataGrid
     const pGrid = d3.json("https://unpkg.com/brc-atlas-bigr/dist/assets/GB-I-grid-27700-reduced.geojson").then(function(data) {
-      grid.append("path")
-      .datum(data)
-      .attr("d", path)
-      .attr("id", "gridlines")
+      dataGrid = data
     })
-
-    drawInsetRectangles(transOpts)
 
     Promise.all([pUK, pGrid]).then(function(){
-        setMapColours()
+      reDrawBoundaries()
     })
 
-    let browsedFileData
+    function reDrawBoundaries() {
 
-    function drawInsetRectangles (opts) {
-      if (opts.insets) {
-        opts.insets.forEach(function(inset) {
-          const ll = transform([inset.bounds.xmin, inset.bounds.ymin])
-          const ur = transform([inset.bounds.xmax, inset.bounds.ymax])
-          const iWidth = ur[0]-ll[0]
-          const iHeight = ll[1]-ur[1]
-          insets.append('rect')
-            .classed('inset', true)
-            .attr('x', function() {
-              if (inset.imageX < 0) {
-                return width - iWidth + inset.imageX
-              } else {
-                return inset.imageX
-              }
-            })
-            .attr('y', function() {
-              if (inset.imageY < 0) {
-                return -inset.imageY
-              } else {
-                return height - inset.imageY - iHeight
-              }
-            })
-            .attr('width', iWidth)
-            .attr('height', iHeight)
-            .attr('fill', 'transparent')
-            .attr('stroke', 'black')
-        })
+      setTransform()
+
+      svg.attr("viewBox", "0 0 " + width + " " +  height)
+
+      if (!prevTransform) {
+        boundary.append("path")
+          .datum(dataBoundary)
+          .attr("d", path)
+          .attr("id", "uk")
+
+        grid.append("path")
+          .datum(dataGrid)
+          .attr("d", path)
+          .attr("id", "gridlines")
+
+      } else {
+        boundary.select("#uk")
+          .attr("d", path)
+
+        grid.select("#gridlines")
+          .attr("d", path)
+
+        svg.selectAll('.inset').remove()
+
+        reDrawMap()
       }
+
+      bigr.getInsetDims(transOpts, height).forEach(function(i){
+        const margin = 10
+        svg.append('rect')
+          .classed('inset', true)
+          .attr('x', i.x - margin)
+          .attr('y', i.y - margin)
+          .attr('width', i.width + 2 * margin)
+          .attr('height', i.height + 2 * margin)
+          .attr('fill', 'transparent')
+          .attr('stroke', 'black')
+      })
+      setMapColours()
     }
 
     function fileSelected() {
       document.getElementById('csvFile').value = null
       browsedFileData = null
-      reDraw()
+      reDrawMap()
     }
     function fileOpened(event) {
       document.getElementById('dataFile').value = "nbn/none.csv"
       const reader = new FileReader()
       reader.addEventListener('load', (event) => {
         browsedFileData = event.target.result
-        reDraw()
+        reDrawMap()
       })
       reader.readAsDataURL(event.target.files[0])
     }
@@ -354,14 +390,14 @@
       setTimeout(function() {
         d3.select('#mapDiv').classed("shake", false)
       }, 500)
-      reDraw(true)
+      reDrawMap(true)
     }
 
     function initSymbolColours() {
       minColour.fromString('A09FFD')
       midColour.fromString('0104E9')
       maxColour.fromString('EC0707')
-      reDrawDots()
+      reDrawHectads()
     }
 
     function initMapColours () {
@@ -404,7 +440,7 @@
         ])
     }
 
-    function reDrawDots() {
+    function reDrawHectads() {
       const colors = colours()
       d3.selectAll("circle")
         .style("fill", function(d){
@@ -419,7 +455,8 @@
         })
     }
 
-    function reDraw(shaken) {
+
+    function reDrawMap(shaken) {
       const colors = colours()
 
       if (browsedFileData) {
@@ -440,7 +477,7 @@
         sourceLink.innerText = "Download source file"
       }
       
-      const totalDuration = document.getElementById('duration').value
+      const  totalDuration = document.getElementById('duration').value
       let enterDuration, updateDuration, exitDuration 
       if (shaken) {
         enterDuration = 500
@@ -451,7 +488,7 @@
       } else {
         enterDuration = updateDuration = exitDuration = totalDuration
       }
-  
+
       d3.csv(file, function(r) {
         if (r.Hectad) {
           // Avoids returning empty rows
