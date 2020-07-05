@@ -216,7 +216,9 @@
     <input type="radio" id="BI2" name="layout" value="BI2" onchange='reDrawBoundaries()'>
     <label for="BI2">Channel Islands inset</label>
     <input type="radio" id="BI3" name="layout" value="BI3" onchange='reDrawBoundaries()'>
-    <label for="BI3">Channel Islands and Northern Isles inset</label><br>
+    <label for="BI3">Northern Isles inset</label>
+    <input type="radio" id="BI4" name="layout" value="BI4" onchange='reDrawBoundaries()'>
+    <label for="BI4">Channel Islands and Northern Isles inset</label><br>
 
     <h3>Raster backdrops</h3>
     <p>
@@ -245,19 +247,19 @@
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
-<script src="libs/jscolor.js"></script>
-<script src="https://unpkg.com/brc-atlas-bigr@1.5.1/dist/bigr.min.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.2.3/jscolor.min.js"></script>
+<script src="https://unpkg.com/brc-atlas-bigr@1.6.0/dist/bigr.min.umd.js"></script>
 
 <script>
-    const minColour = new JSColor('dotsMinColour', {onFineChange: reDrawHectads})
-    const midColour = new JSColor('dotsMidColour', {onFineChange: reDrawHectads})
-    const maxColour = new JSColor('dotsMaxColour', {onFineChange: reDrawHectads})
-    const seaColour = new JSColor('seaColour', {onFineChange: setMapColours})
-    const landColour = new JSColor('landColour', {onFineChange: setMapColours})
-    const outlineColour = new JSColor('outlineColour', {onFineChange: setMapColours})
-    const gridColour = new JSColor('gridColour', {onFineChange: setMapColours})
+    const minColour = new JSColor('#dotsMinColour', {onFineChange: reDrawHectads})
+    const midColour = new JSColor('#dotsMidColour', {onFineChange: reDrawHectads})
+    const maxColour = new JSColor('#dotsMaxColour', {onFineChange: reDrawHectads})
+    const seaColour = new JSColor('#seaColour', {onFineChange: setMapColours})
+    const landColour = new JSColor('#landColour', {onFineChange: setMapColours})
+    const outlineColour = new JSColor('#outlineColour', {onFineChange: setMapColours})
+    const gridColour = new JSColor('#gridColour', {onFineChange: setMapColours})
     const height = 800
-    let width, transOpts, transform, path, radiusPixels,  browsedFileData
+    let width, transOpts, transform, path, radiusPixels,  browsedFileData, prevCode, toCode
     
     Split(['.left', '.right'], {
       gutterSize: 5,
@@ -268,13 +270,23 @@
     initMapColours()
 
     function setTransOpts() {
+      
       if (document.getElementById('BI1').checked) {
-        transOpts = bigr.namedTransOpts.BI1
+        code = 'BI1'
       } else if (document.getElementById('BI2').checked) {
-        transOpts = bigr.namedTransOpts.BI2
+        code = 'BI2'
+      } else if (document.getElementById('BI3').checked) {
+        code = 'BI3'
       } else {
-        transOpts = bigr.namedTransOpts.BI3
+        code = 'BI4'
       }
+      if (code !== toCode) {
+        if (toCode) {
+          prevCode = toCode
+        }
+        toCode = code
+      }
+      transOpts = bigr.namedTransOpts[toCode]
     }
     setTransOpts()
     width = bigr.widthFromHeight(transOpts, height)
@@ -284,7 +296,6 @@
       setTransOpts()
 
       width = bigr.widthFromHeight(transOpts, height)
-      prevTransform = transform
       transform = bigr.transformFunction(transOpts, height)
       radiusPixels = Math.abs(transform([300000,300000])[0]-transform([305000,305000])[0])
       path = d3.geoPath()
@@ -331,9 +342,8 @@
 
       setTransform()
 
-      svg.attr("viewBox", "0 0 " + width + " " +  height)
+      if (!prevCode) {
 
-      if (!prevTransform) {
         boundary.append("path")
           .datum(dataBoundary)
           .attr("d", path)
@@ -344,30 +354,133 @@
           .attr("d", path)
           .attr("id", "gridlines")
 
+        svg.attr("viewBox", "0 0 " + width + " " +  height)
+
+        drawInsetBoxes()
+        setMapColours()
+
       } else {
-        boundary.select("#uk")
-          .attr("d", path)
 
-        grid.select("#gridlines")
-          .attr("d", path)
+        svg.selectAll("path").transition()
+          .ease(d3[document.getElementById('easing').value])   
+          .duration(document.getElementById('duration').value)
+          .attrTween("d", boundaryTween())
 
+        svg.transition()
+          .ease(d3[document.getElementById('easing').value])   
+          .duration(document.getElementById('duration').value)
+          .attrTween("viewBox", svgWidthTween())
+
+        svg.selectAll("circle").transition()
+          .ease(d3[document.getElementById('easing').value])   
+          .duration(document.getElementById('duration').value)
+          .attrTween("r", circleRadiusTween())
+          .attrTween("cx", circlePosTween(0))
+          .attrTween("cy", circlePosTween(1))
+          
         svg.selectAll('.inset').remove()
 
-        reDrawMap()
+        setTimeout(function() {
+          drawInsetBoxes()
+          setMapColours()
+          svg.selectAll("path").transition()
+            .attr("d", path)
+          svg.selectAll("circle").transition()
+            .attr("cx", function(d) {
+              const xy = transform(bigr.getCentroid(d.Hectad, 'gb').centroid)
+              return xy[0]
+            })
+            .attr("cy", function(d) {
+              const xy = transform(bigr.getCentroid(d.Hectad, 'gb').centroid)
+              return xy[1]
+            })
+          svg.attr("viewBox", "0 0 " + width + " " +  height)
+        },  Number(document.getElementById('duration').value))      
       }
 
-      bigr.getInsetDims(transOpts, height).forEach(function(i){
-        const margin = 10
-        svg.append('rect')
-          .classed('inset', true)
-          .attr('x', i.x - margin)
-          .attr('y', i.y - margin)
-          .attr('width', i.width + 2 * margin)
-          .attr('height', i.height + 2 * margin)
-          .attr('fill', 'transparent')
-          .attr('stroke', 'black')
-      })
-      setMapColours()
+      function boundaryTween() {
+        return function(d) {
+          var t=0
+          return function(_) {
+            const transOpts = bigr.getTweenTransOpts(prevCode, toCode, height, t)
+            const transform = bigr.transformFunction(transOpts, height)
+
+            const  path = d3.geoPath()
+              .projection(
+                d3.geoTransform({
+                  point: function(x, y) {
+                    tP = transform([x,y])
+                    tX = tP[0]
+                    tY = tP[1]
+                    this.stream.point(tX, tY)
+                  }
+                })
+              )
+            t = _
+            return path(d)
+          }
+        }
+      }
+
+      function circleRadiusTween() {
+        return function(d) {
+          var t=0
+          return function(_) {
+            const transOpts = bigr.getTweenTransOpts(prevCode, toCode, height, t)
+            const transform = bigr.transformFunction(transOpts, height)
+            const radiusPixels = Math.abs(transform([300000,300000])[0]-transform([305000,305000])[0])
+            t = _
+            if (document.getElementById('sizeCheck').checked) {
+              if (document.getElementById('logTrans').checked) {
+                return Math.log(d.Tetrads) / Math.log(25) * radiusPixels
+              } else {
+                return Math.sqrt(d.Tetrads) / Math.sqrt(25) * radiusPixels
+              }
+            } else {
+              return radiusPixels
+            }
+          }
+        }
+      }
+
+      function circlePosTween(i) {
+        return function(d) {
+          var t=0 
+          return function(_) {
+            const transOpts = bigr.getTweenTransOpts(prevCode, toCode, height, t)
+            const transform = bigr.transformFunction(transOpts, height)
+            const xy = transform(bigr.getCentroid(d.Hectad, 'gb').centroid)
+            t = _
+            return xy[i]
+          }
+        }
+      }
+
+      function svgWidthTween() {
+        return function() {
+          var t=0
+          return function(_) {
+            const transOpts = bigr.getTweenTransOpts(prevCode, toCode, height, t)
+            const width = bigr.widthFromHeight(transOpts, height)
+            t = _
+            return "0 0 " + width + " " +  height
+          }
+        }
+      }
+
+      function drawInsetBoxes() {
+        bigr.getInsetDims(transOpts, height).forEach(function(i){
+          const margin = 10
+          svg.append('rect')
+            .classed('inset', true)
+            .attr('x', i.x - margin)
+            .attr('y', i.y - margin)
+            .attr('width', i.width + 2 * margin)
+            .attr('height', i.height + 2 * margin)
+            .attr('fill', 'transparent')
+            .attr('stroke', 'black')
+        })
+      }
     }
 
     function fileSelected() {
