@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  body {
+    font-size: 1.0em;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .content {
+    max-width: 960px;
+    margin: auto;
+  }
+  #map {
+    width: 960px;
+    height: 500px;
+  }
+  svg {
+    position: relative;
+  }
+  path {
+    fill: #000;
+    fill-opacity: .2;
+    stroke: #fff;
+    stroke-width: 1.5px;
+  }
+  path:hover {
+    fill: brown;
+    fill-opacity: .7;
+  }
+</style>
+<body>
+
+<div class="content">
+  <div id="map"></div>
+  <div>
+    <h2>Demonstration of Leaflet with D3 for slippy mapping</h2>
+    <p>
+      Intro text...
+    </p>
+  </div>
+</div>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://unpkg.com/brc-atlas-bigr@1.7.0/dist/bigr.min.umd.js"></script>
+<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+
+<script>
+    const map = new L.Map("map", {center: [37.8, -96.9], zoom: 4})
+      .addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"))
+
+    const svg = d3.select(map.getPanes().overlayPane).append("svg")
+    const g = svg.append("g").attr("class", "leaflet-zoom-hide");
+
+    (async () => {
+      const collection = await d3.json("../various/us-states.json")
+      const transform = d3.geoTransform({point: projectPoint})
+      const path = d3.geoPath().projection(transform)
+
+      const feature = g.selectAll("path")
+        .data(collection.features)
+        .enter().append("path")
+
+      //map.on("viewreset", reset) // Not firing on current version - seems to be a bug
+      map.on("zoomend", reset)
+      reset()
+
+      // Reposition the SVG to cover the features.
+      function reset() {
+        console.log("reset fired")
+        var bounds = path.bounds(collection),
+            topLeft = bounds[0],
+            bottomRight = bounds[1]
+
+        svg.attr("width", bottomRight[0] - topLeft[0])
+          .attr("height", bottomRight[1] - topLeft[1])
+          .style("left", topLeft[0] + "px")
+          .style("top", topLeft[1] + "px")
+
+        g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")")
+
+        feature.attr("d", path)
+      }
+    })()
+
+    
+    function projectPoint(x, y) {
+      var point = map.latLngToLayerPoint(new L.LatLng(y, x))
+      this.stream.point(point.x, point.y)
+    }
+
+</script>
+</body>

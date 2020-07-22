@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  body {
+    font-size: 1.0em;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .content {
+    max-width: 960px;
+    margin: auto;
+  }
+  #map {
+    width: 960px;
+    height: 500px;
+  }
+  svg {
+    position: relative;
+  }
+  path {
+    fill: #000;
+    fill-opacity: .2;
+    stroke: #fff;
+    stroke-width: 1.5px;
+  }
+  path:hover {
+    fill: brown;
+    fill-opacity: .7;
+  }
+</style>
+<body>
+
+<div class="content">
+  <div id="map"></div>
+  <div>
+    <h2>Demonstration of Leaflet with D3 for slippy mapping</h2>
+    <p>
+      Intro text...
+    </p>
+  </div>
+</div>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://unpkg.com/brc-atlas-bigr@1.7.1/dist/bigr.min.umd.js"></script>
+<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.5/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.5/leaflet.css" /> -->
+
+
+
+<script>
+    const rad = 0.0447
+    const map = new L.Map("map", {center: [52.4862, 1.8904], zoom: 6})
+      .addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"))
+
+    const svg = d3.select(map.getPanes().overlayPane).append("svg")
+    const g = svg.append("g").attr("class", "leaflet-zoom-hide");
+
+    (async () => {
+      let hectads = await d3.csv("bsbi/Urtica_dioica_hectads.csv")
+      let tetrads = await d3.csv("bsbi/Urtica_dioica_tetrads.csv")
+
+      hectads = hectads.map(h => {
+        const ll = bigr.getCentroid(h.GridRef, 'wg').centroid
+        const circle = d3.geoCircle()
+          .center([ll[0], ll[1]])
+          .radius(rad)
+        return {
+            type: "Feature",
+            //geometry: circle(),
+            geometry: square(ll[0], ll[1], rad),
+            properties: {
+              gr: h.GridRef,
+              lat: ll[1],
+              lng: ll[0]
+            }
+        }
+      })
+
+      function square(lon, lat, rad) {
+        // Rough square for testing
+        const xmin = lon - rad
+        const xmax = lon + rad
+        const ymin = lat - rad
+        const ymax = lat + rad
+        return  {
+              "type": "Polygon",
+              "coordinates": [
+                [ [xmin, ymin], [xmax, ymin], [xmax, ymax],
+                  [xmin, ymax], [xmin, ymin] ]
+                ]
+            }
+      }
+
+      tetrads = tetrads.map(t => {
+        const ll = bigr.getCentroid(t.tetrad, 'wg').centroid
+        const circle = d3.geoCircle()
+          .center([ll[0], ll[1]])
+          .radius(rad/5)
+        return {
+            type: "Feature",
+            //geometry: circle(),
+            geometry: square(ll[0], ll[1], rad/5),
+            properties: {
+              gr: t.GridRef,
+              lat: ll[1],
+              lng: ll[0]
+            }
+        }
+      })
+
+      const transform = d3.geoTransform({point: projectPoint})
+      const path = d3.geoPath().projection(transform)
+
+      map.on("viewreset", reset) // Not firing on current version - seems to be a bug
+      map.on("zoomend", reset)
+      map.on("moveend", reset)
+      reset()
+
+      // Reposition the SVG to cover the features.
+      function reset() {
+
+        const zoomThreshold = 6
+
+        console.log(map.getZoom())
+        // Filter the data depending on the map view
+        const view = map.getBounds()
+
+        let data, bufffer
+        if (map.getZoom() <= zoomThreshold) {
+          data = hectads
+          buffer = rad * 1.5
+        } else {
+          data = tetrads
+          buffer = rad / 4
+        }
+
+        var t0 = performance.now()
+
+        filteredData = data.filter(function(h){
+          if (h.properties.lng  < view._southWest.lng - buffer ||
+              h.properties.lng > view._northEast.lng + buffer ||
+              h.properties.lat  < view._southWest.lat - buffer ||
+              h.properties.lat > view._northEast.lat + buffer) {
+            return false
+          } else {
+            return true
+          }
+        })
+
+        var t1 = performance.now()
+        console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
+
+        // Reposition the SVG to cover the features
+        const bounds = path.bounds({
+          type: "FeatureCollection",
+          features: filteredData 
+        })
+        const topLeft = bounds[0]
+        const bottomRight = bounds[1]
+
+        svg.attr("width", bottomRight[0] - topLeft[0])
+          .attr("height", bottomRight[1] - topLeft[1])
+          .style("left", topLeft[0] + "px")
+          .style("top", topLeft[1] + "px")
+
+        g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")")
+
+        // Update the features
+        const u = g.selectAll("path")
+          .data(filteredData, function(d) {
+              return d.properties.gr
+          })
+        u.enter()
+          .append("path")
+        .merge(u)
+          .attr("d", function(d) {
+            return path(d)
+          })
+        u.exit()
+          .remove()
+       
+      }
+    })()
+
+    function projectPoint(x, y) {
+      var point = map.latLngToLayerPoint(new L.LatLng(y, x))
+      this.stream.point(point.x, point.y)
+    }
+
+</script>
+</body>
