@@ -12,7 +12,7 @@
     margin: 20px;
     float:left;
     width: 500px;
-
+    height: 1000px;
   }
   #map {
     width: 500px;
@@ -47,16 +47,29 @@
     <div id=status>
       <div id=statusText>
         <span id=squareSize></span>
+        <div id=loading>
+          <div id="loadingHectads"><img src="resources/loading.gif"/>Loading hectads...</div>
+          <div id="loadingTetrads"></span><img src="resources/loading.gif"/>Loading tetrads...</div>
+          <div id="loadingMonads"></span><img src="resources/loading.gif"/>Loading monads...</div>
+        </div>
       </div>
     </div>
   </div>
   <div id="controls">
     <h2 style="padding-top:20px">Demonstration of Leaflet with D3 for slippy mapping</h2>
     <p>
-      Intro text...
+      This demonstration uses Leaflet to provide slipply map capability together with D3 to handle the display
+      of atlas maps on custom SVG-based layer. The data are served to the client's browser as CSV files and
+      the generation of the geometry from the grid references occurs on the client-side through a Javascript library.
     </p>
     <h3>Taxa</h3>
     <p>
+      The demonstration taxa <i>Urtica dioica</i> and <i>Plantago major</i> have been chosen because they
+      are among the most widespread species. If performance is satisfactory for these species, then it will
+      be more than adequate for all the others. <i>Cochlearia danica</i> was chosen to illustrate a meaningful
+      distribution at monad level.
+    </p>
+    </p>
       <input type="radio" id="taxon0" name="taxon" checked onchange='loadData()'>
       <label for="taxon0">No taxon</label>
       <input type="radio" id="taxon1" name="taxon" onchange='loadData()'>
@@ -66,7 +79,28 @@
       <input type="radio" id="taxon3" name="taxon" onchange='loadData()'>
       <label for="taxon3">Cochlearia danica</label>
     </p>
+    <h3>Resolution</h3>
+    <p>
+      The resolution (hectad, tetrad or monad) changes based on zoom level but you can select 
+      a particular resolution here to see how they affec the responsiveness of the map.
+    </p>
+    </p>
+      <input type="radio" id="resAuto" name="resolution" checked onchange='loadData()'>
+      <label for="resAuto">Auto</label>
+      <input type="radio" id="resHectad" name="resolution" onchange='loadData()'>
+      <label for="resHectad">Hectad</label>
+      <input type="radio" id="resTetrad" name="resolution" onchange='loadData()'>
+      <label for="resTetrad">Tetrad</label>
+      <input type="radio" id="resMonad" name="resolution" onchange='loadData()'>
+      <label for="resMonad">Monad</label>
+    </p>
     <h3>Colours</h3>
+    <p>
+      The graduated colours are based on a frequency attribute associated with each grid ref in
+      the CSV files, but in this demo, no code has been put 
+      in place to scale the colours depending on the range of the frequency attribute, it 
+      merely demonstrates that we can handle colouring of 'dots' according to attributes.
+    </p>
     <p>
       <input type="checkbox" id="colourCheck" name="colourCheck" value="colour" checked onchange='reset()'>
       <label for="colourCheck">Use graduated colours</label>
@@ -78,23 +112,55 @@
       <button onclick='initSymbolColours()' style="margin-left: 1em">Reset</button><br>
     </p>
     <p>
-    
-    </p>
-    <p>
       <label for="opacity">Symbol opacity:</label>
       <input type="number" id="opacity" name="opacity" step="5" min="0" max="100" value="60" oninput='reset()' onchange='reset()'>
       <label for="basemapOpacity">Basemap opacity:</label>
       <input type="number" id="basemapOpacity" name="basemapOpacity" step="5" min="0" max="100" value="100" oninput='setBasemapOpacity()' onchange='setBasemapOpacity()'>
     </p>
+    <h3>Symbols</h3>
+    <p>
+      I've provided the ability to switch between a few different symobls (all are implemented as SVG 'paths').
+      Performance is affected by the number of points required to create each symbol. So circles, for example,
+      take longer to render than squares or triangles. In this demo you can switch the symbol for the whole layer
+      only, but we can render different symbols for different dots in a single layer depending on a layer attribute.
+      There are a lot of different symbols we could create.
+    </p>
+    </p>
+      <input type="radio" id="symbolSquare" name="symbol" checked onchange='loadData()'>
+      <label for="symbolSquare">Squares</label>
+      <input type="radio" id="symbolCircle" name="symbol" onchange='loadData()'>
+      <label for="symbolCircle">Circles</label>
+      <input type="radio" id="symbolDiamond" name="symbol" onchange='loadData()'>
+      <label for="symbolDiamond">Diamond</label>
+      <input type="radio" id="symbolTriangleUp" name="symbol" onchange='loadData()'>
+      <label for="symbolTriangleUp">Triangle up</label>
+      <input type="radio" id="symbolTriangleDown" name="symbol" onchange='loadData()'>
+      <label for="symbolTriangleDown">Triangle down</label>
+      <input type="radio" id="symbolCross" name="symbol" onchange='loadData()'>
+      <label for="symbolCross">Crossed square</label>
+    </p>
+    <h3>Map layers</h3>
+    <p>
+      I think that the ability to adjust opacity of both the basemap and layer and the dot maps 
+      is something we should put into the final product. Here you have to type the opacity values or use
+      the 'spinner' controls but the final product could use sliders.
+    </p>
+    <p>
+      The OpenStreetMap (OSM) layer is a good default, but other free base layers 
+      are available and I have included a number from the 'Stamen' provider (see layer control) by
+      way of demonstration.
+      I have also made a few WMS layers available - here from the British Geological Survey. Leaflet
+      support for WMS layers is limited, so we would have to coded things like legends ourselves.
+      Therefore we need to think carefully about what WMS layers to provide.
+    </p>
   </div>
 </div>
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
-<script src="https://unpkg.com/brc-atlas-bigr@1.8.2/dist/bigr.min.umd.js"></script>
+<script src="https://unpkg.com/brc-atlas-bigr@1.8.5/dist/bigr.min.umd.js"></script>
 <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
 <script src="./resources/tile.stamen.js?v1.2.3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.2.3/jscolor.min.js"></script>
-<script src="./resources/Leaflet.Control.Custom.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
 
 <script>
@@ -138,14 +204,6 @@
     }
     L.control.layers(baseMaps, overlays).addTo(map)
 
-    L.control.custom({
-      position: 'bottomleft',
-      content: '<div id=loading>' +
-              '<div id="loadingHectads"><img src="resources/loading.gif"/>Loading hectads...</div>' +
-              '<div id="loadingTetrads"></span><img src="resources/loading.gif"/>Loading tetrads...</div>' +
-              '<div id="loadingMonads"></span><img src="resources/loading.gif"/>Loading monads...</div>' +
-              '</div>',
-    }).addTo(map)
     map.on("viewreset", reset) // Not firing on current version - seems to be a bug
     map.on("zoomend", reset)
     map.on("moveend", reset)
@@ -294,22 +352,30 @@
     // Reposition the SVG to cover the features.
     function reset() {
 
-
-
       console.log(map.getZoom())
       const zoomThreshold = 7
       const zoomThreshold2 = 9
 
+      let resSel
+      if (document.getElementById('resAuto').checked) {
+        resSel="auto"
+      } else if (document.getElementById('resHectad').checked) {
+        resSel="hectad"
+      } else if (document.getElementById('resTetrad').checked) {
+        resSel="tetrad"
+      } else if (document.getElementById('resMonad').checked) {
+        resSel="monad"
+      }
       // Filter the data depending on the map view
       const view = map.getBounds()
 
       const deg5km = 0.0447
       let data, bufffer
-      if (map.getZoom() <= zoomThreshold) {
+      if (resSel==="hectad" || (resSel==="auto" && map.getZoom() <= zoomThreshold)) {
         data = hectads
         buffer = deg5km * 1.5
         d3.select('#squareSize').html("Displaying hectads")
-      } else if (map.getZoom() <= zoomThreshold2 || !monads.length){
+      } else if (resSel==="tetrad" || (resSel==="auto" && map.getZoom() <= zoomThreshold2) || !monads.length){
         data = tetrads
         buffer = deg5km / 4
         d3.select('#squareSize').html("Displaying tetrads")
@@ -334,13 +400,28 @@
           return false
         } else {
           if (!h.geometry) {
-            const ftr = bigr.getGjson(h.properties.gr, 'wg')
+
+            let shape
+            if (document.getElementById('symbolSquare').checked) {
+              shape="square"
+            } else if (document.getElementById('symbolCircle').checked) {
+              shape="circle"
+            } else if (document.getElementById('symbolDiamond').checked) {
+              shape="diamond"
+            } else if (document.getElementById('symbolTriangleUp').checked) {
+              shape="triangle-up"
+            } else if (document.getElementById('symbolTriangleDown').checked) {
+              shape="triangle-down"
+            } else if (document.getElementById('symbolCross').checked) {
+              shape="cross"
+            }
+            const ftr = bigr.getGjson(h.properties.gr, 'wg', shape)
+            
             h.geometry = ftr.geometry
           }
           return true
         }
       })
-
       // Reposition the SVG to cover the features
       const bounds = path.bounds({
         type: "FeatureCollection",
