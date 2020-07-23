@@ -17,177 +17,373 @@
     position: relative;
   }
   path {
-    fill: #000;
-    fill-opacity: .2;
-    stroke: #fff;
-    stroke-width: 1.5px;
+    stroke: black;
   }
-  path:hover {
-    fill: brown;
-    fill-opacity: .7;
+  #loading img {
+    width:20px;
+    margin: 5px;
+    vertical-align:middle;
+  }
+  #loadingHectads, #loadingTetrads, #loadingMonads {
+    display: none;
+    font-weight: bold;
+  }
+
+  #statusText {
+    margin: 5px;
+    font-weight: bold;
   }
 </style>
 <body>
 
 <div class="content">
+  <h2>Demonstration of Leaflet with D3 for slippy mapping</h2>
   <div id="map"></div>
   <div>
-    <h2>Demonstration of Leaflet with D3 for slippy mapping</h2>
+    <div id=status>
+      <!-- <div id="loadingHectads"><img src='resources/loading.gif'/>Loading hectads...</div>
+      <div id="loadingTetrads"></span><img src='resources/loading.gif'/>Loading tetrads...</div>
+      <div id="loadingMonads"></span><img src='resources/loading.gif'/>Loading monads...</div> -->
+      <div id=statusText>
+        <span id=squareSize></span>
+      </div>
+    </div>
     <p>
       Intro text...
+    </p>
+    <h3>Taxa</h3>
+    <p>
+      <input type="radio" id="taxon0" name="taxon" checked onchange='loadData()'>
+      <label for="taxon0">No taxon</label>
+      <input type="radio" id="taxon1" name="taxon" onchange='loadData()'>
+      <label for="taxon1">Urtica dioica</label>
+      <input type="radio" id="taxon2" name="taxon" onchange='loadData()'>
+      <label for="taxon2">Plantago major</label>
+      <input type="radio" id="taxon3" name="taxon" onchange='loadData()'>
+      <label for="taxon3">Cochlearia danica</label>
+    </p>
+    <h3>Colours</h3>
+    <p>
+      <input type="checkbox" id="colourCheck" name="colourCheck" value="colour" checked onchange='reset()'>
+      <label for="colourCheck">Use graduated colours</label>
+      <input type="checkbox" id="symbolOutline" name="symbolOutline" value="colour" checked onchange='reset()'>
+      <label for="symbolOutline">Symbol outline</label>
+    </p>
+    <p>
+      Symbol colours: Min <input type="text" style="width: 60px"  id="dotsMinColour"></input>,  Mid <input type="text" style="width: 60px"  id="dotsMidColour"></input>, Max <input type="text" style="width: 60px"  id="dotsMaxColour"></input>
+      <button onclick='initSymbolColours()' style="margin-left: 1em">Reset</button><br>
+    </p>
+    <p>
+     
+    </p>
+    <p>
+      <label for="opacity">Symbol opacity:</label>
+      <input type="number" id="opacity" name="opacity" step="5" min="0" max="100" value="60" oninput='reset()' onchange='reset()'>
+      <label for="basemapOpacity">Basemap opacity:</label>
+      <input type="number" id="basemapOpacity" name="basemapOpacity" step="5" min="0" max="100" value="100" oninput='setBasemapOpacity()' onchange='setBasemapOpacity()'>
     </p>
   </div>
 </div>
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
-<script src="https://unpkg.com/brc-atlas-bigr@1.7.1/dist/bigr.min.umd.js"></script>
+<script src="https://unpkg.com/brc-atlas-bigr@1.8.2/dist/bigr.min.umd.js"></script>
 <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+<script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.2.3"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.2.3/jscolor.min.js"></script>
+<script src="./resources/Leaflet.Control.Custom.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
 
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.5/leaflet.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.5/leaflet.css" /> -->
-
-
-
 <script>
-    const rad = 0.0447
-    const map = new L.Map("map", {center: [52.4862, 1.8904], zoom: 6})
-      .addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"))
+    let tcheckstart, hectads, tetrads, monads
+    hectads = []
+    tetrads = []
+    monads = []
+
+    const GBR_BGS_625k_BLT = L.tileLayer.wms('http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?', {
+          layers: 'GBR_BGS_625k_BLT',
+          transparent: true,
+          format: 'image/png'
+      })
+    const GBR_BGS_625k_BLS = L.tileLayer.wms('http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?', {
+        layers: 'GBR_BGS_625k_BLS',
+        transparent: true,
+        format: 'image/png'
+    })
+    const BGS_50k_Superficial_deposits = L.tileLayer.wms('https://map.bgs.ac.uk/arcgis/services/BGS_Detailed_Geology/MapServer/WMSServer?', {
+        layers: 'BGS.50k.Superficial.deposits',
+        transparent: true,
+        format: 'image/png'
+    })
+    const osm = new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+    const stamenWatercolour = new L.StamenTileLayer('watercolor')
+    const stamenToner = new L.StamenTileLayer('toner')
+    const stamenTerrain = new L.StamenTileLayer('terrain')
+
+    const map = new L.Map("map", {center: [55, -4], zoom: 6, layers:[osm]})
+  
+    const baseMaps = {
+      "Open Street Map": osm,
+      "Stamen Toner": stamenToner,
+      "Stamen Terrain": stamenTerrain,
+      "Stamen Watercolour": stamenWatercolour
+    }
+    const overlays = {
+      "BGS 1:625k Bedrock Lithology": GBR_BGS_625k_BLT,
+      "BGS 1:625k Bedrock Lithostratigraphy": GBR_BGS_625k_BLS,
+      "BGS 1:50k Superficial deposits": BGS_50k_Superficial_deposits
+    }
+    L.control.layers(baseMaps, overlays).addTo(map)
+
+    L.control.custom({
+      position: 'bottomleft',
+      content: '<div id=loading>' +
+              '<div id="loadingHectads"><img src="resources/loading.gif"/>Loading hectads...</div>' +
+              '<div id="loadingTetrads"></span><img src="resources/loading.gif"/>Loading tetrads...</div>' +
+              '<div id="loadingMonads"></span><img src="resources/loading.gif"/>Loading monads...</div>' +
+              '</div>',
+    }).addTo(map)
+    map.on("viewreset", reset) // Not firing on current version - seems to be a bug
+    map.on("zoomend", reset)
+    map.on("moveend", reset)
 
     const svg = d3.select(map.getPanes().overlayPane).append("svg")
     const g = svg.append("g").attr("class", "leaflet-zoom-hide");
-
-    (async () => {
-      let hectads = await d3.csv("bsbi/Urtica_dioica_hectads.csv")
-      let tetrads = await d3.csv("bsbi/Urtica_dioica_tetrads.csv")
-
-      hectads = hectads.map(h => {
-        const ll = bigr.getCentroid(h.GridRef, 'wg').centroid
-        const circle = d3.geoCircle()
-          .center([ll[0], ll[1]])
-          .radius(rad)
-        return {
-            type: "Feature",
-            //geometry: circle(),
-            geometry: square(ll[0], ll[1], rad),
-            properties: {
-              gr: h.GridRef,
-              lat: ll[1],
-              lng: ll[0]
-            }
-        }
-      })
-
-      function square(lon, lat, rad) {
-        // Rough square for testing
-        const xmin = lon - rad
-        const xmax = lon + rad
-        const ymin = lat - rad
-        const ymax = lat + rad
-        return  {
-              "type": "Polygon",
-              "coordinates": [
-                [ [xmin, ymin], [xmax, ymin], [xmax, ymax],
-                  [xmin, ymax], [xmin, ymin] ]
-                ]
-            }
-      }
-
-      tetrads = tetrads.map(t => {
-        const ll = bigr.getCentroid(t.tetrad, 'wg').centroid
-        const circle = d3.geoCircle()
-          .center([ll[0], ll[1]])
-          .radius(rad/5)
-        return {
-            type: "Feature",
-            //geometry: circle(),
-            geometry: square(ll[0], ll[1], rad/5),
-            properties: {
-              gr: t.GridRef,
-              lat: ll[1],
-              lng: ll[0]
-            }
-        }
-      })
-
-      const transform = d3.geoTransform({point: projectPoint})
-      const path = d3.geoPath().projection(transform)
-
-      map.on("viewreset", reset) // Not firing on current version - seems to be a bug
-      map.on("zoomend", reset)
-      map.on("moveend", reset)
-      reset()
-
-      // Reposition the SVG to cover the features.
-      function reset() {
-
-        const zoomThreshold = 6
-
-        console.log(map.getZoom())
-        // Filter the data depending on the map view
-        const view = map.getBounds()
-
-        let data, bufffer
-        if (map.getZoom() <= zoomThreshold) {
-          data = hectads
-          buffer = rad * 1.5
-        } else {
-          data = tetrads
-          buffer = rad / 4
-        }
-
-        var t0 = performance.now()
-
-        filteredData = data.filter(function(h){
-          if (h.properties.lng  < view._southWest.lng - buffer ||
-              h.properties.lng > view._northEast.lng + buffer ||
-              h.properties.lat  < view._southWest.lat - buffer ||
-              h.properties.lat > view._northEast.lat + buffer) {
-            return false
-          } else {
-            return true
-          }
-        })
-
-        var t1 = performance.now()
-        console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
-
-        // Reposition the SVG to cover the features
-        const bounds = path.bounds({
-          type: "FeatureCollection",
-          features: filteredData 
-        })
-        const topLeft = bounds[0]
-        const bottomRight = bounds[1]
-
-        svg.attr("width", bottomRight[0] - topLeft[0])
-          .attr("height", bottomRight[1] - topLeft[1])
-          .style("left", topLeft[0] + "px")
-          .style("top", topLeft[1] + "px")
-
-        g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")")
-
-        // Update the features
-        const u = g.selectAll("path")
-          .data(filteredData, function(d) {
-              return d.properties.gr
-          })
-        u.enter()
-          .append("path")
-        .merge(u)
-          .attr("d", function(d) {
-            return path(d)
-          })
-        u.exit()
-          .remove()
-       
-      }
-    })()
 
     function projectPoint(x, y) {
       var point = map.latLngToLayerPoint(new L.LatLng(y, x))
       this.stream.point(point.x, point.y)
     }
+    const transform = d3.geoTransform({point: projectPoint})
+    const path = d3.geoPath().projection(transform)
 
+    const minColour = new JSColor('#dotsMinColour', {onFineChange: reset})
+    const midColour = new JSColor('#dotsMidColour', {onFineChange: reset})
+    const maxColour = new JSColor('#dotsMaxColour', {onFineChange: reset})
+
+    function initSymbolColours() {
+      minColour.fromString('A09FFD')
+      midColour.fromString('0104E9')
+      maxColour.fromString('EC0707')
+      reset()
+    }
+    initSymbolColours()
+
+    function colours() {
+      return colors = d3.scaleLinear()
+        .domain([1,12,25])
+        .range([
+          minColour.toHEXString(),
+          midColour.toHEXString(),
+          maxColour.toHEXString()
+        ])
+    }
+
+    function tcheck(msg) {
+      if (msg) {
+        if (!tcheckstart) {
+          console.log("Initialise tcheck first with emtpy string!")
+        } else {
+          var took = performance.now() - tcheckstart
+          console.log(took + ": " + msg)
+          tcheckstart = ''
+        }
+      } else {
+        tcheckstart = performance.now()
+      }
+    }
+
+    async function loadData() {
+
+      hectads = []
+      tetrads = []
+      monads = []
+      let taxon
+
+      if (!document.getElementById('taxon0').checked) {
+        d3.select('#loadingHectads').style('display', 'block')
+        d3.select('#loadingTetrads').style('display', 'block')
+        d3.select('#loadingMonads').style('display', 'block')
+      }
+      if (document.getElementById('taxon0').checked) {
+        taxon=''
+      } else if (document.getElementById('taxon1').checked) {
+        taxon='Urtica_dioica'
+      } else if (document.getElementById('taxon2').checked) {
+        taxon='Plantago_major'
+      } else if (document.getElementById('taxon3').checked) {
+        taxon='Cochlearia_danica'
+      }
+
+      d3.csv("bsbi/" + taxon + "_tetrads.csv").then(function(data){
+        tetrads = data.map(t => {
+          const ll = bigr.getCentroid(t.gr, 'wg').centroid
+          const ftr = {
+            type: 'Feature',
+            geometry: null
+          }
+          ftr.properties = {
+            gr: t.gr,
+            lat: ll[1],
+            lng: ll[0],
+            freq: t.freq
+          }
+          return ftr
+        })
+      }).catch(function() {
+        console.log("No tetrad data file")
+      }).finally(function() {
+        d3.select('#loadingTetrads').style('display', 'none')
+        reset()
+      })
+
+      d3.csv("bsbi/" + taxon + "_monads.csv").then(function(data){
+        monads = data.map(m => {
+          const ll = bigr.getCentroid(m.gr, 'wg').centroid
+          const ftr = {
+            type: 'Feature',
+            geometry: null
+          }
+          ftr.properties = {
+            gr: m.gr,
+            lat: ll[1],
+            lng: ll[0],
+            freq: m.freq
+          }
+          return ftr
+        })
+      }).catch(function() {
+        console.log("No monad data file")
+      }).finally(function() {
+        d3.select('#loadingMonads').style('display', 'none')
+        reset()
+      })
+
+      d3.csv("bsbi/" + taxon + "_hectads.csv").then(function(data){
+        hectads = data.map(h => {
+          const ll = bigr.getCentroid(h.gr, 'wg').centroid
+          const ftr = {
+            type: 'Feature',
+            geometry: null
+          }
+          ftr.properties = {
+            gr: h.gr,
+            lat: ll[1],
+            lng: ll[0],
+            freq: h.freq
+          }
+          return ftr
+        })
+      }).catch(function() {
+        console.log("No hectad data file")
+      }).finally(function() {
+        d3.select('#loadingHectads').style('display', 'none')
+        reset()
+      })
+    }
+
+    function setBasemapOpacity() {
+      osm.setOpacity(document.getElementById('basemapOpacity').value / 100)
+      stamenWatercolour.setOpacity(document.getElementById('basemapOpacity').value / 100)
+      stamenToner.setOpacity(document.getElementById('basemapOpacity').value / 100)
+      stamenTerrain.setOpacity(document.getElementById('basemapOpacity').value / 100)
+    }
+    // Reposition the SVG to cover the features.
+    function reset() {
+
+
+
+      console.log(map.getZoom())
+      const zoomThreshold = 7
+      const zoomThreshold2 = 9
+
+      // Filter the data depending on the map view
+      const view = map.getBounds()
+
+      const deg5km = 0.0447
+      let data, bufffer
+      if (map.getZoom() <= zoomThreshold) {
+        data = hectads
+        buffer = deg5km * 1.5
+        d3.select('#squareSize').html("Displaying hectads")
+      } else if (map.getZoom() <= zoomThreshold2 || !monads.length){
+        data = tetrads
+        buffer = deg5km / 4
+        d3.select('#squareSize').html("Displaying tetrads")
+      } else {
+        data = monads
+        buffer = deg5km / 2
+        d3.select('#squareSize').html("Displaying monads")
+      }
+
+      if (!data.length) {
+        svg.style('display', 'none')
+        return
+      } else {
+        svg.style('display', 'block')
+      }
+
+      filteredData = data.filter(function(h){
+        if (h.properties.lng  < view._southWest.lng - buffer ||
+            h.properties.lng > view._northEast.lng + buffer ||
+            h.properties.lat  < view._southWest.lat - buffer ||
+            h.properties.lat > view._northEast.lat + buffer) {
+          return false
+        } else {
+          if (!h.geometry) {
+            const ftr = bigr.getGjson(h.properties.gr, 'wg')
+            h.geometry = ftr.geometry
+          }
+          return true
+        }
+      })
+
+      // Reposition the SVG to cover the features
+      const bounds = path.bounds({
+        type: "FeatureCollection",
+        features: filteredData 
+      })
+      const topLeft = bounds[0]
+      const bottomRight = bounds[1]
+
+      svg.attr("width", bottomRight[0] - topLeft[0])
+        .attr("height", bottomRight[1] - topLeft[1])
+        .style("left", topLeft[0] + "px")
+        .style("top", topLeft[1] + "px")
+
+      g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")")
+
+      // Update the features
+      const colors = colours()
+      const u = g.selectAll("path")
+        .data(filteredData, function(d) {
+            return d.properties.gr
+        })
+      u.enter()
+        .append("path")
+      .merge(u)
+        .attr("d", function(d) {
+          return path(d)
+        })
+        .attr("fill", function(d) {
+          if (document.getElementById('colourCheck').checked) {
+            return colors(d.properties.freq)
+          } else {
+            return colors(25)
+          }
+        })
+        .attr("stroke-width", function(d) {
+          if (document.getElementById('symbolOutline').checked) {
+            return '1'
+          } else {
+            return '0'
+          }
+        })
+        .attr("opacity", function(d) {
+          return document.getElementById('opacity').value / 100
+        })
+      u.exit()
+        .remove()
+      
+    }
 </script>
 </body>
