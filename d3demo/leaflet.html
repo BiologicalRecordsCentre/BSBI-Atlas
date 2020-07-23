@@ -5,13 +5,15 @@
     font-size: 1.0em;
     font-family: Arial, Helvetica, sans-serif;
   }
-  /* .xcontent {
-    max-width: 960px;
-    margin: auto;
+  #controls {
+    margin-left: 20px;
   }
-  #next {
+  #mapContainer {
+    margin: 20px;
+    float:left;
+    width: 500px;
 
-  } */
+  }
   #map {
     width: 500px;
     height: 650px;
@@ -40,17 +42,16 @@
 <body>
 
 <div class="content">
-  <h2>Demonstration of Leaflet with D3 for slippy mapping</h2>
-  <div id="map"></div>
-  <div id="next">
+  <div id="mapContainer">
+    <div id="map"></div>
     <div id=status>
-      <!-- <div id="loadingHectads"><img src='resources/loading.gif'/>Loading hectads...</div>
-      <div id="loadingTetrads"></span><img src='resources/loading.gif'/>Loading tetrads...</div>
-      <div id="loadingMonads"></span><img src='resources/loading.gif'/>Loading monads...</div> -->
       <div id=statusText>
         <span id=squareSize></span>
       </div>
     </div>
+  </div>
+  <div id="controls">
+    <h2 style="padding-top:20px">Demonstration of Leaflet with D3 for slippy mapping</h2>
     <p>
       Intro text...
     </p>
@@ -77,7 +78,7 @@
       <button onclick='initSymbolColours()' style="margin-left: 1em">Reset</button><br>
     </p>
     <p>
-     
+    
     </p>
     <p>
       <label for="opacity">Symbol opacity:</label>
