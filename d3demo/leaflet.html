@@ -157,7 +157,7 @@
 </div>
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
-<script src="https://unpkg.com/brc-atlas-bigr@1.8.5/dist/bigr.min.umd.js"></script>
+<script src="https://unpkg.com/brc-atlas-bigr@1.8.6/dist/bigr.min.umd.js"></script>
 <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
 <script src="./resources/tile.stamen.js?v1.2.3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.2.3/jscolor.min.js"></script>
@@ -415,9 +415,8 @@
             } else if (document.getElementById('symbolCross').checked) {
               shape="cross"
             }
-            const ftr = bigr.getGjson(h.properties.gr, 'wg', shape)
             
-            h.geometry = ftr.geometry
+            h.geometry = bigr.getGjson(h.properties.gr, 'wg', shape)
           }
           return true
         }
