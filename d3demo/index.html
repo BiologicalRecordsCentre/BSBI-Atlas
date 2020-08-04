@@ -249,6 +249,7 @@
 <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.2.3/jscolor.min.js"></script>
 <script src="https://unpkg.com/brc-atlas-bigr@1.6.0/dist/bigr.min.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas/dist/brcatlas.min.umd.js"></script>
 
 <script>
     const minColour = new JSColor('#dotsMinColour', {onFineChange: reDrawHectads})
@@ -286,17 +287,17 @@
         }
         toCode = code
       }
-      transOpts = bigr.namedTransOpts[toCode]
+      transOpts = brcatlas.namedTransOpts[toCode]
     }
     setTransOpts()
-    width = bigr.widthFromHeight(transOpts, height)
+    width = brcatlas.widthFromHeight(transOpts, height)
     
     function setTransform () {
 
       setTransOpts()
 
-      width = bigr.widthFromHeight(transOpts, height)
-      transform = bigr.transformFunction(transOpts, height)
+      width = brcatlas.widthFromHeight(transOpts, height)
+      transform = brcatlas.transformFunction(transOpts, height)
       radiusPixels = Math.abs(transform([300000,300000])[0]-transform([305000,305000])[0])
       path = d3.geoPath()
         .projection(
@@ -402,8 +403,8 @@
         return function(d) {
           var t=0
           return function(_) {
-            const transOpts = bigr.getTweenTransOpts(prevCode, toCode, height, t)
-            const transform = bigr.transformFunction(transOpts, height)
+            const transOpts = brcatlas.getTweenTransOpts(prevCode, toCode, height, t)
+            const transform = brcatlas.transformFunction(transOpts, height)
 
             const  path = d3.geoPath()
               .projection(
@@ -426,8 +427,8 @@
         return function(d) {
           var t=0
           return function(_) {
-            const transOpts = bigr.getTweenTransOpts(prevCode, toCode, height, t)
-            const transform = bigr.transformFunction(transOpts, height)
+            const transOpts = brcatlas.getTweenTransOpts(prevCode, toCode, height, t)
+            const transform = brcatlas.transformFunction(transOpts, height)
             const radiusPixels = Math.abs(transform([300000,300000])[0]-transform([305000,305000])[0])
             t = _
             if (document.getElementById('sizeCheck').checked) {
@@ -447,8 +448,8 @@
         return function(d) {
           var t=0 
           return function(_) {
-            const transOpts = bigr.getTweenTransOpts(prevCode, toCode, height, t)
-            const transform = bigr.transformFunction(transOpts, height)
+            const transOpts = brcatlas.getTweenTransOpts(prevCode, toCode, height, t)
+            const transform = brcatlas.transformFunction(transOpts, height)
             const xy = transform(bigr.getCentroid(d.Hectad, 'gb').centroid)
             t = _
             return xy[i]
@@ -460,8 +461,8 @@
         return function() {
           var t=0
           return function(_) {
-            const transOpts = bigr.getTweenTransOpts(prevCode, toCode, height, t)
-            const width = bigr.widthFromHeight(transOpts, height)
+            const transOpts = brcatlas.getTweenTransOpts(prevCode, toCode, height, t)
+            const width = brcatlas.widthFromHeight(transOpts, height)
             t = _
             return "0 0 " + width + " " +  height
           }
@@ -469,7 +470,7 @@
       }
 
       function drawInsetBoxes() {
-        bigr.getInsetDims(transOpts, height).forEach(function(i){
+        brcatlas.getInsetDims(transOpts, height).forEach(function(i){
           const margin = 10
           svg.append('rect')
             .classed('inset', true)
