@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<style>
+  body{
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  #map svg{
+    border: 1px solid black; 
+    -webkit-flex: 1; /* Safari */
+    -ms-flex: 1; /* IE 10 */
+    flex: 1; /* Standard syntax */
+  }
+  .flex-container{
+    width: 80%;
+    max-width: 1100px;
+    min-height: 300px;
+    margin: 0 auto;
+    display: -webkit-flex; /* Safari */     
+    display: flex; /* Standard syntax */
+  }
+  #controls{
+    padding: 10px;
+    -webkit-flex: 2; /* Safari */
+    -ms-flex: 2; /* IE 10 */
+    flex: 2; /* Standard syntax */
+  }
+</style>
+<body class="flex-container">
+<div id="map" class="column"></div>
+<div id="controls">
+  <label for="taxonA">Taxon:</label>
+  <input type="select" list="taxa" name="taxonA" id="taxonA">
+  <button onclick="taxaChanged()">Map</button>
+  <div id='mapTypeRadios'>
+    <input type="radio" id="dateClassesNew" name="mapType" value="Date classes (newest on top)" checked="checked">
+    <label for="dateClassesNew">Date classes (newest on top)</label><br/>
+    <input type="radio" id="dateClassesOld" name="mapType" value="Date classes (oldest on top)">
+    <label for="dateClassesOld">Date classes (oldest on top)</label><br/>
+    <input type="radio" id="tetradFrequency" name="mapType" value="Tetrad frequency">
+    <label for="tetradFrequency">Tetrad frequency</label><br/>
+    <input type="radio" id="nativeStatus" name="mapType" value="Native species status">
+    <label for="nativeStatus">Native status</label><br/>
+    <input type="radio" id="change_30_69_to_00_19" name="mapType" value="Change from 1930-1969 vs 2000-2019">
+    <label for="change_30_69_to_00_19">Change from 1930-1969 to 2000-2019</label><br/>
+    <input type="radio" id="change_87_99_to_00_19" name="mapType" value="Change from 1987-1999 to 2000-2019">
+    <label for="change_87_99_to_00_19">Change from 1987-1999 to 2000-2019</label><br/>
+  </div>
+</div>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<!-- <script src="./dist/brcatlas.umd.js"></script> -->
+<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas/dist/brcatlas.min.umd.js"></script>
+<!-- <script src="./bsbi/bsbiAtlasDataAccess.js"></script> -->
+<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/BSBI-Atlas/dist/bsbiatlas.min.umd.js"></script>
+<!-- <link rel="stylesheet" type="text/css" href="./dist/brcatlas.umd.css"> -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas/dist/brcatlas.umd.css">
+
+<script>
+  function taxaChanged(){
+    var taxon = d3.select('#taxonA').node().value
+    var ddbid = d3.select('#taxa option[value="' + taxon +'"]').attr('data-value')
+    console.log(taxon, ddbid)
+    map.setIdentfier(ddbid)
+  }
+
+  var taxa = d3.select('body').append('datalist').attr('id', 'taxa')
+  d3.csv('./bsbi/demoMvp/taxon_list.csv').then(function(data) {
+    data.forEach(function(d) {
+      taxa.append('option').attr('value', d['canonical']).attr('data-value', d['ddb id'])
+      taxa.append('option').attr('value', d['vernacular']).attr('data-value', d['ddb id'])
+    })
+  }).catch(function(e){
+    console.log('Error reading taxon CSV')
+  })
+
+  d3.selectAll('#mapTypeRadios').on('click', function(){
+    mapTypesKey = d3.select('input[name="mapType"]:checked').node().value
+    console.log(mapTypesKey)
+    map.setMapType(mapTypesKey)
+  })
+
+  var map = brcatlas.svgMap({
+      id: "map",
+      height: 800,
+      expand: false,
+      legend: true,
+      legendScale: 1,
+      transOptsInit: 'Inset Channel Islands (CI)',
+      transOptsSel: {
+        'No insets': 'BI1',
+        'Inset Channel Islands (CI)': 'BI2',
+        'Inset CI & Northern Isles': 'BI4',
+      },
+      //transOptsOpts: false,
+      mapTypesInit: 'Tetrad frequency',
+      mapTypesSel: {
+        'Date classes (newest on top)': 'bsbiHectadDateClassesNewest',
+        'Date classes (oldest on top)': 'bsbiHectadDateClassesOldest',
+        'Tetrad frequency': 'bsbiHectadDateTetFreq',
+        'Native species status': 'nativeSpeciesStatus',
+        'Change from 1987-1999 to 2000-2019': 'change_1987_1999_vs_2000_2019',
+        'Change from 1930-1969 vs 2000-2019': 'change_1930_1969_vs_2000_2019'
+      },
+      mapTypesOpts: false
+  })
+  map.setMapType('Date classes (newest on top)')
+</script>
+</body>
+</html>
