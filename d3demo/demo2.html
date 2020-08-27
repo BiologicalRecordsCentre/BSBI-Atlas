@@ -320,7 +320,7 @@
         reset()
       })
 
-      d3.csv("bsbi/" + taxon + "_hectads.csv").then(function(data){
+      d3.csv("bsbi/demo2/" + taxon + "_hectads.csv").then(function(data){
         hectads = data.map(h => {
           const ll = bigr.getCentroid(h.gr, 'wg').centroid
           const ftr = {
