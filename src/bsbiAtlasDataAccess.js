@@ -7,8 +7,9 @@ import * as d3 from 'd3'
 //"SE84",1,0,0,0,0,0,0,
 
 function getCSV(identifier) {
-  //return 'work/nbn/' + identifier + ' hectads with tetrads-2020-05-29.csv'
-  return './bsbi/demoMvp/atlas_taxa_2020_08_25/hectad-dateclass-status/' + identifier.replace(".", "_") + '.csv'
+  const file = './bsbi/demoMvp/atlas_taxa_2020_08_25/hectad-dateclass-status/' + identifier.replace(".", "_") + '.csv'
+  console.log(file)
+  return file
 }
 export function change_1987_1999_vs_2000_2019(identifier){
   return change(identifier, ['1987 - 1999'], ['2000 - 2009', '2010 - 2019'], 'Change from 1987-1999 to 2000-2019')   
