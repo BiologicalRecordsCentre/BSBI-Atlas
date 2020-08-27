@@ -1709,7 +1709,7 @@
 
   function getCSV(identifier) {
     var file = './bsbi/demoMvp/atlas_taxa_2020_08_25/hectad-dateclass-status/' + identifier.replace(".", "_") + '.csv';
-    console.log(file);
+    console.log('file', file);
     return file;
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "bsbiatlas",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Javascript data access library for BSBI Atlas mapping project.",
   "type": "module",
   "browser": "dist/bsbiatlas.umd.js",

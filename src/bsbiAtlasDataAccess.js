@@ -8,7 +8,7 @@ import * as d3 from 'd3'
 
 function getCSV(identifier) {
   const file = './bsbi/demoMvp/atlas_taxa_2020_08_25/hectad-dateclass-status/' + identifier.replace(".", "_") + '.csv'
-  console.log(file)
+  console.log('file', file)
   return file
 }
 export function change_1987_1999_vs_2000_2019(identifier){
