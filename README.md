@@ -12,6 +12,6 @@ The data access library in this project includes only the code which is specific
 
 ### Demonstrations
 
-- [Explore the D3 SVG demonstration](d3demo/demo1.hmtl)
-- [Explore the D3 Leaflet demonstration](d3demo/demo2.hmtl)
-- [MVP demonstration](d3demo/demoMvp.hmtl)
+- [Explore the D3 SVG demonstration](d3demo/demo1.html)
+- [Explore the D3 Leaflet demonstration](d3demo/demo2.html)
+- [MVP demonstration](d3demo/demoMvp.html)
