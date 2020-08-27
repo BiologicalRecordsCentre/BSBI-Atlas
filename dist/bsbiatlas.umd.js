@@ -1702,7 +1702,6 @@
     return linearish(scale);
   }
 
-  // These are data access functions required for the BSBI online Atlas designed to be used in conjunction with
   // the BRC Atlat Javascript library ().
   // CSV access functions designed to be used with data in the general format indicated below.
   //"hectad","to 1929","1930 - 1949","1950 - 1969","1970 - 1986","1987 - 1999","2000 - 2009","2010 - 2019","atlasstatus"
@@ -1711,12 +1710,7 @@
   function getCSV(identifier) {
     var file = './bsbi/demoMvp/atlas_taxa_2020_08_25/hectad-dateclass-status/' + identifier.replace(".", "_") + '.csv';
     console.log(file);
-    return file; // if (fs.existsSync(file)) {
-    //   console.log(file, ' found')
-    //   return file
-    // } else {
-    //   console.log(file, 'not found')
-    // }
+    return file;
   }
 
   function change_1987_1999_vs_2000_2019(identifier) {
