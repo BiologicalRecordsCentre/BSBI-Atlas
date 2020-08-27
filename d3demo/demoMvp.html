@@ -49,7 +49,7 @@
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <!-- <script src="./dist/brcatlas.umd.js"></script> -->
-<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.9/dist/brcatlas.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.12/dist/brcatlas.umd.js"></script>
 <!-- <script src="./../dist/bsbiatlas.umd.js"></script> -->
 <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/BSBI-Atlas@latest/dist/bsbiatlas.umd.js"></script>
 <!-- <link rel="stylesheet" type="text/css" href="./dist/brcatlas.umd.css"> -->
@@ -59,7 +59,7 @@
   function taxaChanged(){
     var taxon = d3.select('#taxonA').node().value
     var ddbid = d3.select('#taxa option[value="' + taxon +'"]').attr('data-value')
-    console.log(taxon, ddbid)
+    //console.log(taxon, ddbid)
     map.setIdentfier(ddbid)
   }
 

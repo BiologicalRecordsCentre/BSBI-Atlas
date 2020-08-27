@@ -1,41 +1,27 @@
 // Based on example: https://github.com/rollup/rollup-starter-lib
-import { eslint } from "rollup-plugin-eslint";
 import resolve from '@rollup/plugin-node-resolve'
-//import commonjs from '@rollup/plugin-commonjs'
+import json from '@rollup/plugin-json'
 import babel from '@rollup/plugin-babel'
-import { terser } from 'rollup-plugin-terser'
 import pkg from './package.json'
-//import css from 'rollup-plugin-css-only'
 
 export default [
-	// browser-friendly UMD builds
+	// browser-friendly UMD build
+	// Wont bother with min since CDN can deliver than from this file
   {
+		external: ['d3'],
 		input: 'index.js',
 		output: {
+			globals: {
+				'd3': 'd3'
+			},
 			name: 'bsbiatlas',
 			file: pkg.browser,
 			format: 'umd'
 		},
 		plugins: [
-      eslint(),
 			resolve(), // so Rollup can find node libs
-      //commonjs(), // so Rollup can convert CommonJS modules to an ES modules
-      babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
-		]
-  },
-  {
-		input: 'index.js',
-		output: {
-			name: 'bsbiatlas',
-			file: pkg.browsermin,
-			format: 'umd'
-		},
-		plugins: [
-      eslint(),
-			resolve(), 
-      //commonjs(),
-      babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
-      terser()
+			babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
+			json(), // required to import package into index.js
 		]
   }
 ]
