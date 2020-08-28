@@ -157,7 +157,7 @@
 </div>
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
-<script src="https://unpkg.com/brc-atlas-bigr@1.8.6/dist/bigr.min.umd.js"></script>
+<script src="https://unpkg.com/brc-atlas-bigr@2.0.1/dist/bigr.umd.js"></script>
 <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
 <script src="./resources/tile.stamen.js?v1.2.3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.2.3/jscolor.min.js"></script>
@@ -276,7 +276,7 @@
         taxon='Cochlearia_danica'
       }
 
-      d3.csv("bsbi/" + taxon + "_tetrads.csv").then(function(data){
+      d3.csv("bsbi/demo2/" + taxon + "_tetrads.csv").then(function(data){
         tetrads = data.map(t => {
           const ll = bigr.getCentroid(t.gr, 'wg').centroid
           const ftr = {
@@ -298,7 +298,7 @@
         reset()
       })
 
-      d3.csv("bsbi/" + taxon + "_monads.csv").then(function(data){
+      d3.csv("bsbi/demo2/" + taxon + "_monads.csv").then(function(data){
         monads = data.map(m => {
           const ll = bigr.getCentroid(m.gr, 'wg').centroid
           const ftr = {
