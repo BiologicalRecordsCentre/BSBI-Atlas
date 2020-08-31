@@ -32,6 +32,8 @@
   <input type="select" list="taxa" name="taxonA" id="taxonA">
   <button onclick="taxaChanged()">Map</button>
   <div id='mapTypeRadios'>
+    <input type="radio" id="noData" name="mapType" value="No hectad map" checked="checked">
+    <label for="noData">No hectad map</label><br/>
     <input type="radio" id="dateClassesNew" name="mapType" value="Date classes (newest on top)" checked="checked">
     <label for="dateClassesNew">Date classes (newest on top)</label><br/>
     <input type="radio" id="dateClassesOld" name="mapType" value="Date classes (oldest on top)">
@@ -45,17 +47,34 @@
     <input type="radio" id="change_87_99_to_00_19" name="mapType" value="Change from 1987-1999 to 2000-2019">
     <label for="change_87_99_to_00_19">Change from 1987-1999 to 2000-2019</label><br/>
   </div>
+  <div style='margin-top: 1em'>
+    <div style='font-weight: bold'>Basemap layers demo</div>
+    <input type="checkbox" id="chalk" onchange="baseMap()">
+    <label for="chalk">Chalk and limestone</label><br>
+    <input type="checkbox" id="urban" onchange="baseMap()">
+    <label for="urban">Urban areas</label><br>
+    <input type="checkbox" id="parks" onchange="baseMap()">
+    <label for="parks">National Parks</label><br>
+    <input type="checkbox" id="motorway" onchange="baseMap()">
+    <label for="motorway">Motorways</label><br>
+    <input type="checkbox" id="topo" onchange="baseMap()">
+    <label for="topo">Topo</label><br>
+  </div>
+  <div style='margin-top: 1em'>
+    <div style='font-weight: bold'>Hectad info</div>
+    <div id='dotCaption'></div>
+  </div>
 </div>
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
 
-<!-- <script src="./../../brc-atlas/dist/brcatlas.umd.js"></script>
+<script src="./../../brc-atlas/dist/brcatlas.umd.js"></script>
 <script src="./../dist/bsbiatlas.umd.js"></script>
-<link rel="stylesheet" type="text/css" href="./../../brc-atlas/dist/brcatlas.umd.css"> -->
+<link rel="stylesheet" type="text/css" href="./../../brc-atlas/dist/brcatlas.umd.css">
 
-<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.12/dist/brcatlas.umd.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.12/dist/brcatlas.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/BSBI-Atlas@0.0.5/dist/bsbiatlas.umd.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.12/dist/brcatlas.umd.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.12/dist/brcatlas.umd.css"> -->
 
 <script>
   function taxaChanged(){
@@ -81,21 +100,21 @@
     map.setMapType(mapTypesKey)
   })
 
+  const transOptsSel = brcatlas.namedTransOpts
+  delete brcatlas.namedTransOpts.BI3 // Remove the options without CI
+
   var map = brcatlas.svgMap({
       id: "map",
+      captionId: "dotCaption",
       height: 800,
       expand: false,
       legend: true,
       legendScale: 1,
-      transOptsInit: 'Inset Channel Islands (CI)',
-      transOptsSel: {
-        'No insets': 'BI1',
-        'Inset Channel Islands (CI)': 'BI2',
-        'Inset CI & Northern Isles': 'BI4',
-      },
-      //transOptsControl: false,
-      mapTypesInit: 'Tetrad frequency',
+      transOptsKey: 'BI2',
+      transOptsSel: brcatlas.namedTransOpts,
+      mapTypesKey: 'Tetrad frequency',
       mapTypesSel: {
+        'No hectad map': brcatlas.noData,
         'Date classes (newest on top)': bsbiatlas.bsbiHectadDateClassesNewest,
         'Date classes (oldest on top)': bsbiatlas.bsbiHectadDateClassesOldest,
         'Tetrad frequency': bsbiatlas.bsbiHectadDateTetFreq,
@@ -106,6 +125,39 @@
       mapTypesControl: false
   })
   map.setMapType('Date classes (newest on top)')
+
+  map.baseMapPriorities(['motorway', 'urban', 'parks', 'chalk', 'topo'])
+  function baseMap(){
+    if (d3.select("#motorway:checked").node()){
+      map.basemapImage('motorway', true, './../work/motorways.png', './../work/motorways.pgw')
+    } else {
+      map.basemapImage('motorway', false)
+    }
+    if (d3.select("#chalk:checked").node()){
+      map.basemapImage('chalk', true, './../work/chalkAndLimestone.png', './../work/chalkAndLimestone.pgw')
+    } else {
+      map.basemapImage('chalk', false)
+    }
+
+    if (d3.select("#parks:checked").node()){
+      map.basemapImage('parks', true, './../work/nationalParks.png', './../work/nationalParks.pgw')
+    } else {
+      map.basemapImage('parks', false)
+    }
+
+    if (d3.select("#urban:checked").node()){
+      map.basemapImage('urban', true, './../work/urbanAreas.png', './../work/urbanAreas.pgw')
+    } else {
+      map.basemapImage('urban', false)
+    }
+
+    if (d3.select("#topo:checked").node()){
+      map.basemapImage('topo', true, './../work/osmtop096.png', './../work/osmtop096.pgw')
+    } else {
+      map.basemapImage('topo', false)
+    }
+  }
+  
 </script>
 </body>
 </html>

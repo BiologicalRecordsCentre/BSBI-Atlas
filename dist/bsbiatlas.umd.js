@@ -33,14 +33,20 @@
         var presentLate = late.some(function (f) {
           return r[f] === '1';
         });
-        var i;
+        var i, capText;
 
         if (presentEarly && presentLate) {
           i = 0; //present
+
+          capText = 'present in both periods';
         } else if (!presentEarly && presentLate) {
           i = 1; //gain
+
+          capText = 'gain';
         } else if (presentEarly && !presentLate) {
           i = 2; //loss
+
+          capText = 'loss';
         } else {
           i = 100; //not present in either period
         }
@@ -49,7 +55,8 @@
           return {
             gr: r.hectad,
             colour: colours[i],
-            shape: shapes[i]
+            shape: shapes[i],
+            caption: "Hectad: <b>".concat(r.hectad, "</b></br>Change: <b>").concat(capText, "</b>")
           };
         }
       }).then(function (data) {
@@ -91,10 +98,14 @@
   function bsbiHectadDateClasses(identifier, newestOnTop, legendTitle) {
     var colours = ["#FEF4E4", "#FEE1BB", "#FECFA9", "#FDAF8A", "#EB8070", "#CA4C4C", "#F34C4C"];
     var dateClassCols = ["to 1929", "1930 - 1949", "1950 - 1969", "1970 - 1986", "1987 - 1999", "2000 - 2009", "2010 - 2019"];
+    var periodTitle, periodCaption;
 
     if (newestOnTop) {
       dateClassCols = dateClassCols.reverse();
       colours = colours.reverse();
+      periodTitle = 'Most recently recorded';
+    } else {
+      periodTitle = 'First recorded';
     }
 
     return new Promise(function (resolve, reject) {
@@ -105,6 +116,7 @@
           for (var i = 0; i < dateClassCols.length; i++) {
             if (Number(r[dateClassCols[i]])) {
               colour = colours[i];
+              periodCaption = dateClassCols[i];
               break;
             }
           }
@@ -117,7 +129,8 @@
 
           return {
             gr: r.hectad,
-            colour: colour
+            colour: colour,
+            caption: "Hectad: <b>".concat(r.hectad, "</b></br>").concat(periodTitle, ": <b>").concat(periodCaption, "</b>")
           };
         }
       }).then(function (data) {
@@ -179,13 +192,37 @@
     return new Promise(function (resolve, reject) {
       d3.csv(getCSV(identifier), function (r) {
         if (r.hectad) {
-          var atlasstatus = r.atlasstatus ? r.atlasstatus : 'missing'; //const atlasstatus = r.atlasstatus ? r.atlasstatus : 'w'
+          var atlasstatus = r.atlasstatus ? r.atlasstatus : 'missing';
+          var capText;
+
+          switch (atlasstatus) {
+            case 'missing':
+              capText = 'missing';
+              break;
+
+            case 'n':
+              capText = 'native';
+              break;
+
+            case 'a':
+              capText = 'alien (non-native)';
+              break;
+
+            case 'y':
+              capText = 'present';
+              break;
+
+            case 'bullseye':
+              capText = 'reintroduced';
+              break;
+          }
 
           return {
             gr: r.hectad,
             shape: atlasstatus === "w" ? 'bullseye' : 'circle',
             colour: colours[atlasstatus],
-            colour2: colours.bullseye
+            colour2: colours.bullseye,
+            caption: "Hectad: <b>".concat(r.hectad, "</b></br>Status: <b>").concat(capText, "</b>")
           };
         }
       }).then(function (data) {
@@ -239,7 +276,8 @@
         if (r.hectad) {
           return {
             gr: r.hectad,
-            colour: colour(fake)
+            colour: colour(fake),
+            caption: "Hectad: <b>".concat(r.hectad, "</b></br>Tetrads where present: <b>").concat(Math.floor(fake), "</b>")
           };
         }
       }).then(function (data) {
@@ -270,7 +308,7 @@
   }
 
   var name = "bsbiatlas";
-  var version = "0.0.5";
+  var version = "0.0.6";
   var description = "Javascript data access library for BSBI Atlas mapping project.";
   var type = "module";
   var browser = "dist/bsbiatlas.umd.js";

@@ -1,4 +1,5 @@
 import * as d3 from 'd3'
+import { select } from 'd3'
 // These are data access functions required for the BSBI online Atlas designed to be used in conjunction with
 // the BRC Atlat Javascript library ().
 
@@ -24,13 +25,16 @@ function change(identifier, early, late, legendTitle){
     d3.csv(getCSV(identifier), function(r) {
       const presentEarly = early.some(f => r[f] === '1')
       const presentLate = late.some(f => r[f] === '1')
-      let i
+      let i, capText
       if (presentEarly && presentLate) {
         i = 0 //present
+        capText = 'present in both periods'
       } else if (!presentEarly && presentLate) {
         i = 1 //gain
+        capText = 'gain'
       } else if (presentEarly && !presentLate) {
         i = 2 //loss
+        capText = 'loss'
       } else {
         i = 100 //not present in either period
       }
@@ -39,6 +43,7 @@ function change(identifier, early, late, legendTitle){
           gr: r.hectad,
           colour: colours[i],
           shape: shapes[i],
+          caption: `Hectad: <b>${r.hectad}</b></br>Change: <b>${capText}</b>`
         })
       }
     }).then(function(data) {
@@ -82,9 +87,13 @@ export function bsbiHectadDateClassesOldest(identifier) {
 function bsbiHectadDateClasses(identifier, newestOnTop, legendTitle) {
   let colours = ["#FEF4E4", "#FEE1BB","#FECFA9","#FDAF8A","#EB8070","#CA4C4C", "#F34C4C"]
   let dateClassCols=["to 1929","1930 - 1949","1950 - 1969","1970 - 1986","1987 - 1999","2000 - 2009","2010 - 2019"]
+  let periodTitle, periodCaption
   if (newestOnTop) {
     dateClassCols = dateClassCols.reverse()
     colours = colours.reverse()
+    periodTitle='Most recently recorded'
+  } else {
+    periodTitle='First recorded'
   }
   return new Promise((resolve, reject) => {
     d3.csv(getCSV(identifier), function(r) {
@@ -93,6 +102,7 @@ function bsbiHectadDateClasses(identifier, newestOnTop, legendTitle) {
         for (let i=0; i<dateClassCols.length; i++){
           if (Number(r[dateClassCols[i]])) {
             colour=colours[i]
+            periodCaption = dateClassCols[i]
             break
           }
         }
@@ -104,6 +114,7 @@ function bsbiHectadDateClasses(identifier, newestOnTop, legendTitle) {
         return({
           gr: r.hectad,
           colour: colour,
+          caption: `Hectad: <b>${r.hectad}</b></br>${periodTitle}: <b>${periodCaption}</b>`
         })
       }
     }).then(function(data) {
@@ -170,12 +181,30 @@ export function nativeSpeciesStatus(identifier) {
     d3.csv(getCSV(identifier), function(r) {
       if (r.hectad) {
         const atlasstatus = r.atlasstatus ? r.atlasstatus : 'missing'
-        //const atlasstatus = r.atlasstatus ? r.atlasstatus : 'w'
+        let capText
+        switch(atlasstatus) {
+          case 'missing': 
+            capText = 'missing'
+            break;
+          case 'n': 
+            capText = 'native'
+            break;
+          case 'a': 
+            capText = 'alien (non-native)'
+            break;
+          case 'y': 
+            capText = 'present'
+            break;
+          case 'bullseye': 
+            capText = 'reintroduced'
+            break;
+        }
         return({
           gr: r.hectad,
           shape: atlasstatus === "w" ? 'bullseye' : 'circle',
           colour: colours[atlasstatus],
-          colour2: colours.bullseye
+          colour2: colours.bullseye,
+          caption: `Hectad: <b>${r.hectad}</b></br>Status: <b>${capText}</b>`
         })
       }
     }).then(function(data) {
@@ -234,6 +263,7 @@ export function bsbiHectadDateTetFreq(identifier) {
         return({
           gr: r.hectad,
           colour: colour(fake),
+          caption: `Hectad: <b>${r.hectad}</b></br>Tetrads where present: <b>${Math.floor(fake)}</b>`
         })
       }
     }).then(function(data) {
