@@ -129,30 +129,30 @@
   map.baseMapPriorities(['motorway', 'urban', 'parks', 'chalk', 'topo'])
   function baseMap(){
     if (d3.select("#motorway:checked").node()){
-      map.basemapImage('motorway', true, './../work/motorways.png', './../work/motorways.pgw')
+      map.basemapImage('motorway', true, './bsbi/demoBasemaps/motorways.png', './bsbi/demoBasemaps/motorways.pgw')
     } else {
       map.basemapImage('motorway', false)
     }
     if (d3.select("#chalk:checked").node()){
-      map.basemapImage('chalk', true, './../work/chalkAndLimestone.png', './../work/chalkAndLimestone.pgw')
+      map.basemapImage('chalk', true, './bsbi/demoBasemaps/chalkAndLimestone.png', './bsbi/demoBasemaps/chalkAndLimestone.pgw')
     } else {
       map.basemapImage('chalk', false)
     }
 
     if (d3.select("#parks:checked").node()){
-      map.basemapImage('parks', true, './../work/nationalParks.png', './../work/nationalParks.pgw')
+      map.basemapImage('parks', true, './bsbi/demoBasemaps/nationalParks.png', './bsbi/demoBasemaps/nationalParks.pgw')
     } else {
       map.basemapImage('parks', false)
     }
 
     if (d3.select("#urban:checked").node()){
-      map.basemapImage('urban', true, './../work/urbanAreas.png', './../work/urbanAreas.pgw')
+      map.basemapImage('urban', true, './bsbi/demoBasemaps/urbanAreas.png', './bsbi/demoBasemaps/urbanAreas.pgw')
     } else {
       map.basemapImage('urban', false)
     }
 
     if (d3.select("#topo:checked").node()){
-      map.basemapImage('topo', true, './../work/osmtop096.png', './../work/osmtop096.pgw')
+      map.basemapImage('topo', true, './bsbi/demoBasemaps/osmtop096.png', './bsbi/demoBasemaps/osmtop096.pgw')
     } else {
       map.basemapImage('topo', false)
     }
