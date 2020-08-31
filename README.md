@@ -15,3 +15,5 @@ The data access library in this project includes only the code which is specific
 - [Explore the D3 SVG demonstration](d3demo/demo1.html)
 - [Explore the D3 Leaflet demonstration](d3demo/demo2.html)
 - [MVP demonstration](d3demo/demoMvp.html)
+- [Image basemap and dot info demonstration](d3demo/demoImage.html)
+
