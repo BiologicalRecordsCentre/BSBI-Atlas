@@ -56,9 +56,9 @@
 <script src="./../dist/bsbiatlas.umd.js"></script>
 <link rel="stylesheet" type="text/css" href="./../../brc-atlas/dist/brcatlas.umd.css"> -->
 
-<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.12/dist/brcatlas.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.14/dist/brcatlas.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/BSBI-Atlas@0.0.5/dist/bsbiatlas.umd.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.12/dist/brcatlas.umd.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.14/dist/brcatlas.umd.css">
 
 <script>
   function taxaChanged(){
@@ -90,13 +90,8 @@
       expand: false,
       legend: true,
       legendScale: 1,
-      transOptsInit: 'Inset Channel Islands (CI)',
-      transOptsSel: {
-        'No insets': 'BI1',
-        'Inset Channel Islands (CI)': 'BI2',
-        'Inset CI & Northern Isles': 'BI4',
-      },
-      //transOptsControl: false,
+      transOptsKey: 'BI2',
+      transOptsSel: brcatlas.namedTransOpts,
       mapTypesInit: 'Tetrad frequency',
       mapTypesSel: {
         'Date classes (newest on top)': bsbiatlas.bsbiHectadDateClassesNewest,
