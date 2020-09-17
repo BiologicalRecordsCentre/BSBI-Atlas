@@ -75,9 +75,9 @@
 <script src="./../dist/bsbiatlas.umd.js"></script>
 <link rel="stylesheet" type="text/css" href="./../../brc-atlas/dist/brcatlas.umd.css"> -->
 
-<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.14/dist/brcatlas.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.1.1/dist/brcatlas.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/BSBI-Atlas@0.0.6/dist/bsbiatlas.umd.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.0.14/dist/brcatlas.umd.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.1.1/dist/brcatlas.umd.css">
 
 <script>
   function taxaChanged(){
@@ -85,6 +85,7 @@
     var ddbid = d3.select('#taxa option[value="' + taxon +'"]').attr('data-value')
     //console.log(taxon, ddbid)
     map.setIdentfier(ddbid)
+    map.redrawMap()
   }
 
   var taxa = d3.select('body').append('datalist').attr('id', 'taxa')
@@ -99,8 +100,13 @@
 
   d3.selectAll('#mapTypeRadios').on('click', function(){
     mapTypesKey = d3.select('input[name="mapType"]:checked').node().value
-    console.log(mapTypesKey)
-    map.setMapType(mapTypesKey)
+    if (mapTypesKey === 'No hectad map') {
+      console.log("clear")
+      map.clearMap()
+    } else {
+      map.setMapType(mapTypesKey)
+      map.redrawMap()
+    }
   })
 
   const transOptsSel = brcatlas.namedTransOpts
@@ -113,6 +119,13 @@
       expand: false,
       legend: true,
       legendScale: 1,
+      legendOpts: {
+        display: true,
+        scale: 1,
+        x: 10,
+        y: 5,
+        data: null
+      },
       transOptsKey: 'BI2',
       transOptsSel: brcatlas.namedTransOpts,
       mapTypesKey: 'Tetrad frequency',
@@ -128,6 +141,7 @@
       mapTypesControl: false
   })
   map.setMapType('Date classes (newest on top)')
+  map.redrawMap()
 
   map.baseMapPriorities(['motorway', 'urban', 'parks', 'chalk', 'topo'])
   function baseMap(){

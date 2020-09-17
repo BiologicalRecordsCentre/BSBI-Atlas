@@ -5,8 +5,8 @@ This repository has two purposes:
 
 The most of the code for the BSBI Atlas project is stored elsewhere in BRC general libraries for Atlas projects, e.g:
 
-- The BRC Atlas library (https://github.com/BiologicalRecordsCentre/brc-atlas)
-- The BRC British Isles Grid Reference library (https://github.com/BiologicalRecordsCentre/brc-atlas-bigr)
+- [The BRC Atlas library](https://biologicalrecordscentre.github.io/brc-atlas)
+- [The BRC British Isles Grid Reference library](https://biologicalrecordscentre.github.io/brc-atlas-bigr)
 
 The data access library in this project includes only the code which is specific to BSBI use of the aforementioned resources.
 

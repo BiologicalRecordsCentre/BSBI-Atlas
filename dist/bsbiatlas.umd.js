@@ -67,6 +67,9 @@
           opacity: 0.9,
           legend: {
             title: legendTitle,
+            size: 1,
+            precision: 10000,
+            opacity: 0.9,
             lines: [{
               colour: '#DD5A2F',
               text: 'Gain',
@@ -142,6 +145,10 @@
           opacity: 0.9,
           legend: {
             title: legendTitle,
+            size: 1,
+            shape: 'circle',
+            precision: 10000,
+            opacity: 0.9,
             lines: [{
               colour: '#FEF4E4',
               text: 'Before 1930'
@@ -234,6 +241,9 @@
           size: 1,
           legend: {
             title: 'Native status',
+            precision: 10000,
+            opacity: 0.8,
+            size: 1,
             lines: [{
               colour: 'blue',
               text: 'Native',
@@ -289,6 +299,10 @@
           opacity: 0.9,
           legend: {
             title: 'Tetrad frequency',
+            size: 1,
+            shape: 'circle',
+            precision: 10000,
+            opacity: 0.9,
             lines: [{
               colour: '#edf8b1',
               text: '1 tetrad'
@@ -308,7 +322,7 @@
   }
 
   var name = "bsbiatlas";
-  var version = "0.0.6";
+  var version = "0.0.7";
   var description = "Javascript data access library for BSBI Atlas mapping project.";
   var type = "module";
   var browser = "dist/bsbiatlas.umd.js";

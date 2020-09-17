@@ -54,6 +54,9 @@ function change(identifier, early, late, legendTitle){
         opacity: 0.9,
         legend: {
           title: legendTitle,
+          size: 1,
+          precision: 10000,
+          opacity: 0.9,
           lines: [
             {
               colour: '#DD5A2F',
@@ -126,6 +129,10 @@ function bsbiHectadDateClasses(identifier, newestOnTop, legendTitle) {
         opacity: 0.9,
         legend: {
           title: legendTitle,
+          size: 1,
+          shape: 'circle',
+          precision: 10000,
+          opacity: 0.9,
           lines: [
             {
               colour: '#FEF4E4',
@@ -216,6 +223,9 @@ export function nativeSpeciesStatus(identifier) {
         size: 1,
         legend: {
           title: 'Native status',
+          precision: 10000,
+          opacity: 0.8,
+          size: 1,
           lines: [
             {
               colour: 'blue',
@@ -275,6 +285,10 @@ export function bsbiHectadDateTetFreq(identifier) {
         opacity: 0.9,
         legend: {
           title: 'Tetrad frequency',
+          size: 1,
+          shape: 'circle',
+          precision: 10000,
+          opacity: 0.9,
           lines: [
             {
               colour: '#edf8b1',
