@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="icon" href="favicon.ico" type="image/gif">
+</head>
+<style>
+  body{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size:small;
+  }
+  #map #svgMap svg{
+    border: 1px solid black; 
+    -webkit-flex: 1; /* Safari */
+    -ms-flex: 1; /* IE 10 */
+    flex: 1; /* Standard syntax */
+  }
+  #map2 #slippyMap{
+    margin-left: 5px;
+    border: 1px solid black; 
+    -webkit-flex: 2; /* Safari */
+    -ms-flex: 2; /* IE 10 */
+    flex: 2; /* Standard syntax */
+  }
+
+  body{
+    width: 80%;
+    max-width: 1100px;
+    min-height: 300px;
+    margin: 0 auto;
+  }
+  .flex-container{
+    max-width: 1100px;
+    min-height: 300px;
+    display: -webkit-flex; /* Safari */     
+    display: flex; /* Standard syntax */
+  }
+  #xcontrols{
+    padding: 10px;
+    -webkit-flex: 2; /* Safari */
+    -ms-flex: 2; /* IE 10 */
+    flex: 2; /* Standard syntax */
+  }
+
+
+
+</style>
+<body>
+<div class="flex-container">
+  <div id="map"></div>
+  <div id="map2"></div>
+</div>
+<div>
+  <div style="display:inline-block;float:left;margin-right: 30px;">
+    <label for="taxonA">Taxon:</label>
+    <input type="select" list="taxa" name="taxonA" id="taxonA">
+    <button onclick="taxaChanged()">Map</button>
+    <div id='mapTypeRadios' style='margin-top: 0.5em'>
+      <input type="radio" id="noData" name="mapType" value="No hectad map" checked="checked">
+      <label for="noData">No hectad map</label><br/>
+      <input type="radio" id="dateClassesNew" name="mapType" value="Date classes (newest on top)" checked="checked">
+      <label for="dateClassesNew">Date classes (newest on top)</label><br/>
+      <input type="radio" id="dateClassesOld" name="mapType" value="Date classes (oldest on top)">
+      <label for="dateClassesOld">Date classes (oldest on top)</label><br/>
+      <input type="radio" id="tetradFrequency" name="mapType" value="Tetrad frequency">
+      <label for="tetradFrequency">Tetrad frequency</label><br/>
+      <input type="radio" id="nativeStatus" name="mapType" value="Native species status">
+      <label for="nativeStatus">Native status</label><br/>
+      <input type="radio" id="change_30_69_to_00_19" name="mapType" value="Change from 1930-1969 vs 2000-2019">
+      <label for="change_30_69_to_00_19">Change from 1930-1969 to 2000-2019</label><br/>
+      <input type="radio" id="change_87_99_to_00_19" name="mapType" value="Change from 1987-1999 to 2000-2019">
+      <label for="change_87_99_to_00_19">Change from 1987-1999 to 2000-2019</label><br/>
+    </div>
+  </div>
+  <div>
+    <div style='font-weight: bold'>Hectad info</div>
+    <div id='dotCaption'></div>
+  </div>
+</div>
+
+<!--D3 JS required exernal dependency of BRC Atlas library-->
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<!--Leaflet JS required exernal dependency of BRC Atlas library-->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+<!-- <script src="./../../brc-atlas/dist/brcatlas.umd.js"></script>
+<script src="./../dist/bsbiatlas.umd.js"></script>
+<link rel="stylesheet" type="text/css" href="./../../brc-atlas/dist/brcatlas.umd.css"> -->
+
+<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.2.0/dist/brcatlas.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/BSBI-Atlas@0.0.7/dist/bsbiatlas.umd.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.2.0/dist/brcatlas.umd.css">
+
+<script>
+  function taxaChanged(){
+    var taxon = d3.select('#taxonA').node().value
+    var ddbid = d3.select('#taxa option[value="' + taxon +'"]').attr('data-value')
+    //console.log(taxon, ddbid)
+    staticMap.setIdentfier(ddbid)
+    staticMap.redrawMap()
+
+    slippyMap.setIdentfier(ddbid)
+    slippyMap.redrawMap()
+  }
+
+  var taxa = d3.select('body').append('datalist').attr('id', 'taxa')
+  d3.csv('./bsbi/demoMvp/taxon_list.csv').then(function(data) {
+    data.forEach(function(d) {
+      taxa.append('option').attr('value', d['canonical']).attr('data-value', d['ddb id'])
+      taxa.append('option').attr('value', d['vernacular']).attr('data-value', d['ddb id'])
+    })
+  }).catch(function(e){
+    console.log('Error reading taxon CSV')
+  })
+
+  d3.selectAll('#mapTypeRadios input').on('click', function(){
+    mapTypesKey = d3.select('input[name="mapType"]:checked').node().value
+    if (mapTypesKey === 'No hectad map') {
+      staticMap.clearMap()
+      slippyMap.clearMap()
+    } else {
+      slippyMap.setMapType(mapTypesKey)
+      slippyMap.redrawMap()
+      staticMap.setMapType(mapTypesKey)
+      staticMap.redrawMap()
+    }
+  })
+
+  const transOptsSel = brcatlas.namedTransOpts
+  delete brcatlas.namedTransOpts.BI3 // Remove the options without CI
+
+  // Map height
+  const height = 600
+  // Create the static map
+  var staticMap = brcatlas.svgMap({
+      selector: "#map",
+      mapid: "svgMap",
+      captionId: "dotCaption",
+      height: height,
+      expand: false,
+      legend: true,
+      legendScale: 1,
+      legendOpts: {
+        display: true,
+        scale: 0.7,
+        x: 10,
+        y: 5,
+        data: null
+      },
+      transOptsKey: 'BI2',
+      transOptsSel: brcatlas.namedTransOpts,
+      mapTypesKey: 'Tetrad frequency',
+      mapTypesSel: {
+        'No hectad map': brcatlas.noData,
+        'Date classes (newest on top)': bsbiatlas.bsbiHectadDateClassesNewest,
+        'Date classes (oldest on top)': bsbiatlas.bsbiHectadDateClassesOldest,
+        'Tetrad frequency': bsbiatlas.bsbiHectadDateTetFreq,
+        'Native species status': bsbiatlas.nativeSpeciesStatus,
+        'Change from 1987-1999 to 2000-2019': bsbiatlas.change_1987_1999_vs_2000_2019,
+        'Change from 1930-1969 vs 2000-2019': bsbiatlas.change_1930_1969_vs_2000_2019
+      },
+      mapTypesControl: false,
+      transOptsControl: false,
+      callbackOptions: function() {
+        slippyMap.setSize(staticMap.getMapWidth(), height)
+      }
+  })
+
+  // Create the slippy map
+  var slippyMap = brcatlas.leafletMap({
+        selector: "#map2",
+        mapid: 'slippyMap',
+        height: height,
+        width: height,
+        captionId: "dotCaption",
+        mapTypesKey: 'Tetrad frequency',
+        mapTypesSel: {
+          'No hectad map': brcatlas.noData,
+          'Date classes (newest on top)': bsbiatlas.bsbiHectadDateClassesNewest,
+          'Date classes (oldest on top)': bsbiatlas.bsbiHectadDateClassesOldest,
+          'Tetrad frequency': bsbiatlas.bsbiHectadDateTetFreq,
+          'Native species status': bsbiatlas.nativeSpeciesStatus,
+          'Change from 1987-1999 to 2000-2019': bsbiatlas.change_1987_1999_vs_2000_2019,
+          'Change from 1930-1969 vs 2000-2019': bsbiatlas.change_1930_1969_vs_2000_2019
+        },
+        legend: false,
+      })
+</script>
+</body>
+</html>

@@ -3,6 +3,9 @@ This repository has two purposes:
 1. A repository for a BSBI specific data access Javascript library for use with the online Atlas 2020 project.
 2. A repository for test and demonstration pages for that project.
 
+GitHub repo: [https://github.com/BiologicalRecordsCentre/BSBI-Atlas](https://github.com/BiologicalRecordsCentre/BSBI-Atlas)
+GitHub 'pages': [https://biologicalrecordscentre.github.io/BSBI-Atlas/](https://biologicalrecordscentre.github.io/BSBI-Atlas/)
+
 The most of the code for the BSBI Atlas project is stored elsewhere in BRC general libraries for Atlas projects, e.g:
 
 - [The BRC Atlas library](https://biologicalrecordscentre.github.io/brc-atlas)
@@ -16,5 +19,6 @@ The data access library in this project includes only the code which is specific
 - [Explore the D3 Leaflet demonstration](d3demo/demo2.html)
 - [MVP demonstration](d3demo/demoMvp.html)
 - [Image basemap and dot info demonstration](d3demo/demoImage.html)
-- [Demo of static and slippy combination 1](d3demo/demoWithSlippy.html)
+- [Demo of static/slippy switch](d3demo/demoWithSlippy.html)
+- [Demo of side by side static and slippy](d3demo/demoWithSlippy2.html)
 
