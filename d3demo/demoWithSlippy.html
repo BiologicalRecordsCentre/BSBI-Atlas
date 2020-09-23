@@ -41,13 +41,13 @@
   <input type="select" list="taxa" name="taxonA" id="taxonA">
   <button onclick="taxaChanged()">Map</button>
   <div id='mapTypeRadios' style='margin-top: 0.5em'>
-    <input type="radio" id="noData" name="mapType" value="No hectad map" checked="checked">
+    <input type="radio" id="noData" name="mapType" value="No hectad map">
     <label for="noData">No hectad map</label><br/>
-    <input type="radio" id="dateClassesNew" name="mapType" value="Date classes (newest on top)" checked="checked">
+    <input type="radio" id="dateClassesNew" name="mapType" value="Date classes (newest on top)">
     <label for="dateClassesNew">Date classes (newest on top)</label><br/>
     <input type="radio" id="dateClassesOld" name="mapType" value="Date classes (oldest on top)">
     <label for="dateClassesOld">Date classes (oldest on top)</label><br/>
-    <input type="radio" id="tetradFrequency" name="mapType" value="Tetrad frequency">
+    <input type="radio" id="tetradFrequency" name="mapType" value="Tetrad frequency" checked="checked">
     <label for="tetradFrequency">Tetrad frequency</label><br/>
     <input type="radio" id="nativeStatus" name="mapType" value="Native species status">
     <label for="nativeStatus">Native status</label><br/>
@@ -173,9 +173,6 @@
       }
   })
 
-  staticMap.setMapType('Date classes (newest on top)')
-  staticMap.redrawMap()
-
   // Create the slippy map
   var slippyMap = brcatlas.leafletMap({
         selector: "#map",
@@ -203,7 +200,6 @@
           data: null
         },
       })
-  //slippyMap.setMapType('Date classes (newest on top)')
 
   d3.select('#slippyMap').style('display', 'none')
 </script>
