@@ -16,4 +16,5 @@ The data access library in this project includes only the code which is specific
 - [Explore the D3 Leaflet demonstration](d3demo/demo2.html)
 - [MVP demonstration](d3demo/demoMvp.html)
 - [Image basemap and dot info demonstration](d3demo/demoImage.html)
+- [Demo of static and slippy combination 1](d3demo/demoWithSlippy.html)
 
