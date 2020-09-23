@@ -3,8 +3,8 @@ This repository has two purposes:
 1. A repository for a BSBI specific data access Javascript library for use with the online Atlas 2020 project.
 2. A repository for test and demonstration pages for that project.
 
-GitHub repo: [https://github.com/BiologicalRecordsCentre/BSBI-Atlas](https://github.com/BiologicalRecordsCentre/BSBI-Atlas)
-GitHub 'pages': [https://biologicalrecordscentre.github.io/BSBI-Atlas/](https://biologicalrecordscentre.github.io/BSBI-Atlas/)
+- GitHub repo: [https://github.com/BiologicalRecordsCentre/BSBI-Atlas](https://github.com/BiologicalRecordsCentre/BSBI-Atlas)
+- GitHub 'pages': [https://biologicalrecordscentre.github.io/BSBI-Atlas/](https://biologicalrecordscentre.github.io/BSBI-Atlas/)
 
 The most of the code for the BSBI Atlas project is stored elsewhere in BRC general libraries for Atlas projects, e.g:
 
