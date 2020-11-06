@@ -83,15 +83,18 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
-<!-- <script src="./../../brc-atlas/dist/brcatlas.umd.js"></script>
+<!-- <script src="./../../brc-atlas/dist/brcatlas.umd.js"></script> -->
 <script src="./../dist/bsbiatlas.umd.js"></script>
-<link rel="stylesheet" type="text/css" href="./../../brc-atlas/dist/brcatlas.umd.css"> -->
+<!-- <link rel="stylesheet" type="text/css" href="./../../brc-atlas/dist/brcatlas.umd.css"> -->
 
 <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.2.0/dist/brcatlas.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/BSBI-Atlas@0.0.7/dist/bsbiatlas.umd.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/BSBI-Atlas@0.0.7/dist/bsbiatlas.umd.js"></script> -->
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@0.2.0/dist/brcatlas.umd.css">
 
 <script>
+  bsbiatlas.setDataRoot('./bsbi/demoMvp/atlas_taxa_2020_08_25/hectad-dateclass-status/')
+  //console.log(bsbiatlas.dataroot)
+
   function taxaChanged(){
     var taxon = d3.select('#taxonA').node().value
     var ddbid = d3.select('#taxa option[value="' + taxon +'"]').attr('data-value')

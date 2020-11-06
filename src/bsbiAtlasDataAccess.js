@@ -5,11 +5,12 @@ import * as d3 from 'd3'
 // CSV access functions designed to be used with data in the general format indicated below.
 //"hectad","to 1929","1930 - 1949","1950 - 1969","1970 - 1986","1987 - 1999","2000 - 2009","2010 - 2019","atlasstatus"
 //"SE84",1,0,0,0,0,0,0,
-
-function getCSV(identifier, dataroot) {
-  //dataroot='./bsbi/demoMvp/atlas_taxa_2020_08_25/hectad-dateclass-status/'
+let dataroot=null
+export function setDataRoot(droot){
+  dataroot=droot
+}
+function getCSV(identifier) {
   const file = `${dataroot}${identifier.replace(".", "_")}.csv`
-  console.log('file', file)
   return file
 }
 export function change_1987_1999_vs_2000_2019(identifier){

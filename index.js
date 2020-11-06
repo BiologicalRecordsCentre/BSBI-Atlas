@@ -4,7 +4,8 @@ import {
   bsbiHectadDateClassesNewest,  
   bsbiHectadDateClassesOldest, 
   nativeSpeciesStatus,
-  bsbiHectadDateTetFreq
+  bsbiHectadDateTetFreq,
+  setDataRoot
 } from './src/bsbiAtlasDataAccess.js'
 import pkg from './package.json'
 
@@ -18,5 +19,6 @@ export {
   bsbiHectadDateClassesNewest,  
   bsbiHectadDateClassesOldest, 
   nativeSpeciesStatus,
-  bsbiHectadDateTetFreq
+  bsbiHectadDateTetFreq,
+  setDataRoot
 } 
