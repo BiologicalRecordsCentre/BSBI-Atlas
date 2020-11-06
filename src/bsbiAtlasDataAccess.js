@@ -1,5 +1,4 @@
 import * as d3 from 'd3'
-import { select } from 'd3'
 // These are data access functions required for the BSBI online Atlas designed to be used in conjunction with
 // the BRC Atlat Javascript library ().
 
@@ -7,8 +6,9 @@ import { select } from 'd3'
 //"hectad","to 1929","1930 - 1949","1950 - 1969","1970 - 1986","1987 - 1999","2000 - 2009","2010 - 2019","atlasstatus"
 //"SE84",1,0,0,0,0,0,0,
 
-function getCSV(identifier) {
-  const file = './bsbi/demoMvp/atlas_taxa_2020_08_25/hectad-dateclass-status/' + identifier.replace(".", "_") + '.csv'
+function getCSV(identifier, dataroot) {
+  //dataroot='./bsbi/demoMvp/atlas_taxa_2020_08_25/hectad-dateclass-status/'
+  const file = `${dataroot}${identifier.replace(".", "_")}.csv`
   console.log('file', file)
   return file
 }

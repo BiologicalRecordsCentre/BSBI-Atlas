@@ -9,8 +9,9 @@
   //"hectad","to 1929","1930 - 1949","1950 - 1969","1970 - 1986","1987 - 1999","2000 - 2009","2010 - 2019","atlasstatus"
   //"SE84",1,0,0,0,0,0,0,
 
-  function getCSV(identifier) {
-    var file = './bsbi/demoMvp/atlas_taxa_2020_08_25/hectad-dateclass-status/' + identifier.replace(".", "_") + '.csv';
+  function getCSV(identifier, dataroot) {
+    //dataroot='./bsbi/demoMvp/atlas_taxa_2020_08_25/hectad-dateclass-status/'
+    var file = "".concat(dataroot).concat(identifier.replace(".", "_"), ".csv");
     console.log('file', file);
     return file;
   }
@@ -322,7 +323,7 @@
   }
 
   var name = "bsbiatlas";
-  var version = "0.0.7";
+  var version = "0.0.8";
   var description = "Javascript data access library for BSBI Atlas mapping project.";
   var type = "module";
   var browser = "dist/bsbiatlas.umd.js";
