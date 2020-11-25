@@ -7,13 +7,4 @@ Other repos associated with the BSBI Atlas 2020 project are:
 - [The BRC Atlas library](https://biologicalrecordscentre.github.io/brc-atlas)
 - [The BRC Atlas Drupal module](https://github.com/BiologicalRecordsCentre/brc-atlas-drupal8)
 
-To see the the early demonstration examples housed in this repo, use the links below from the associated [GitHub 'pages'](https://biologicalrecordscentre.github.io/BSBI-Atlas/).
-
-### Demonstrations
-
-- [Explore the D3 SVG demonstration](d3demo/demo1.html)
-- [Explore the D3 Leaflet demonstration](d3demo/demo2.html)
-- [MVP demonstration](d3demo/demoMvp.html)
-- [Image basemap and dot info demonstration](d3demo/demoImage.html)
-- [Demo of static/slippy switch](d3demo/demoWithSlippy.html)
-- [Demo of side by side static and slippy](d3demo/demoWithSlippy2.html)
+To see the the early demonstration examples housed in this repo, visit the associated [GitHub 'pages'](https://biologicalrecordscentre.github.io/BSBI-Atlas/).
