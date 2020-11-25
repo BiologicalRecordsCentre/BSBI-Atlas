@@ -7,7 +7,7 @@ Other repos associated with the BSBI Atlas 2020 project are:
 - [The BRC Atlas library](https://biologicalrecordscentre.github.io/brc-atlas)
 - [The BRC Atlas Drupal module](https://github.com/BiologicalRecordsCentre/brc-atlas-drupal8)
 
-To see the the early demonstration examples housed in this repo, use the links below from the associated [GitHub 'pages'](https://biologicalrecordscentre.github.io/BSBI-Atlas/).
+To see the the early demonstration examples housed in this repo, use the links below from the associated [GitHub 'pages'](https://biologicalrecordscentre.github.io/BSBI-Atlas/). Note that the examples in this repo do *not* use the up-to-date code stored in the other repos referenced above. In general they reference specific early versions of those libraries. To see which versions they reference, check the `<script src=...>` tags in the examples. It is unlikely that any of the examples in this repo would work with the most recent versions of the libraries.
 
 ### Demonstrations
 
