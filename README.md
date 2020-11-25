@@ -1,5 +1,5 @@
 ## BSBI online Atlas 2020 - early development examples and demos
-This repository has two purposes hosts some early development and demonstration code for the BSBI 2020 Atlas. It was previously also a repository for data access functions required for use with the BRC Atlas library which is one of the building blocks for  the BSBI 2020 Atlas. Those data access functions are now incorporated into the [BSBI Drupal 8 module](https://github.com/BiologicalRecordsCentre/bsbi-atlas-drupal8) and removed from this project.
+This repository hosts some early development and demonstration code for the BSBI 2020 Atlas. It was previously also a repository for data access functions required for use with the BRC Atlas library which is one of the building blocks for  the BSBI 2020 Atlas. Those data access functions are now incorporated into the [BSBI Drupal 8 module](https://github.com/BiologicalRecordsCentre/bsbi-atlas-drupal8) and removed from this project.
 
 Other repos associated with the BSBI Atlas 2020 project are:
 
