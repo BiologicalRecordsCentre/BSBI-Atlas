@@ -1,24 +1,10 @@
 ## BSBI online Atlas 2020
-This repository has two purposes:
-1. A repository for a BSBI specific data access Javascript library for use with the online Atlas 2020 project.
-2. A repository for test and demonstration pages for that project.
+This repository has two purposes hosts some early development and demonstration code for the BSBI 2020 Atlas. It was previously also a repository for data access functions required for use with [the BRC Atlas library](https://biologicalrecordscentre.github.io/brc-atlas) the the BSBI 2020 Atlas. Those data access functions are now incorporated into the [BSBI Drupal 8 module](https://github.com/BiologicalRecordsCentre/bsbi-atlas-drupal8) and removed from this project.
 
-- GitHub repo: [https://github.com/BiologicalRecordsCentre/BSBI-Atlas](https://github.com/BiologicalRecordsCentre/BSBI-Atlas)
-- GitHub 'pages': [https://biologicalrecordscentre.github.io/BSBI-Atlas/](https://biologicalrecordscentre.github.io/BSBI-Atlas/)
+To see the the early demonstration examples housed in this repo, visit the associated [GitHub 'pages'](https://biologicalrecordscentre.github.io/BSBI-Atlas/).
 
-The most of the code for the BSBI Atlas project is stored elsewhere in BRC general libraries for Atlas projects, e.g:
+Other repos associated with the BSBI Atlas 2020 project are:
 
-- [The BRC Atlas library](https://biologicalrecordscentre.github.io/brc-atlas)
 - [The BRC British Isles Grid Reference library](https://biologicalrecordscentre.github.io/brc-atlas-bigr)
-
-The data access library in this project includes only the code which is specific to BSBI use of the aforementioned resources.
-
-### Demonstrations
-
-- [Explore the D3 SVG demonstration](d3demo/demo1.html)
-- [Explore the D3 Leaflet demonstration](d3demo/demo2.html)
-- [MVP demonstration](d3demo/demoMvp.html)
-- [Image basemap and dot info demonstration](d3demo/demoImage.html)
-- [Demo of static/slippy switch](d3demo/demoWithSlippy.html)
-- [Demo of side by side static and slippy](d3demo/demoWithSlippy2.html)
-
+- [The BRC Atlas library](https://biologicalrecordscentre.github.io/brc-atlas)
+- [The BRC Atlas Drupal module](https://github.com/BiologicalRecordsCentre/brc-atlas-drupal8)
